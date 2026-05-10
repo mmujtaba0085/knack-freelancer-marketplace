@@ -1,0 +1,31 @@
+<%- include('../layouts/header', { title: 'Reset password' }) %>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Knack<span>.</span></div>
+    <h1 class="auth-title">Forgot your password?</h1>
+    <p class="auth-sub">Enter your email and we'll send you a reset link.</p>
+
+    <% if (sent) { %>
+      <div class="alert alert-success">
+        ✓ If that email is registered, a reset link is on its way. Check your inbox.
+      </div>
+      <a href="/login" class="btn btn-primary btn-full" style="margin-top:8px">Back to sign in</a>
+    <% } else { %>
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error"><%= errors[0].msg %></div>
+      <% } %>
+      <form action="/forgot-password" method="POST">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="form-group">
+            <label class="form-label" for="email">Email address</label>
+            <input class="form-input" type="email" id="email" name="email"
+              value="<%= body.email || '' %>" placeholder="you@example.com" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Send reset link</button>
+          <a href="/login" class="btn btn-ghost btn-full">← Back to sign in</a>
+        </div>
+      </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

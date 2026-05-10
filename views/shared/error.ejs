@@ -1,0 +1,13 @@
+<%- include('../layouts/header', { title: 'Something went wrong' }) %>
+<div class="error-page">
+  <div>
+    <div class="error-code" style="font-size:80px">✕</div>
+    <h1 class="error-title">Something went wrong.</h1>
+    <p class="error-msg"><%= message || 'An unexpected error occurred. Please try again.' %></p>
+    <div class="flex gap-12" style="justify-content:center;flex-wrap:wrap">
+      <a href="javascript:history.back()" class="btn btn-primary">Go back</a>
+      <a href="/"                         class="btn btn-outline">Home</a>
+    </div>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

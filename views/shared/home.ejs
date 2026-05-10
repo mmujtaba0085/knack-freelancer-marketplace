@@ -1,0 +1,112 @@
+<%- include('../layouts/header', { title: 'Knack · The marketplace for serious work' }) %>
+
+<!-- ─── Hero ──────────────────────────────────────────────────────────────────-->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <span>✦</span> The marketplace for serious work
+    </div>
+    <h1 class="hero-title">
+      Hire talent that<br><em>actually delivers.</em>
+    </h1>
+    <p class="hero-sub">
+      Knack connects ambitious clients with elite freelancers across design, engineering, writing, and more. No noise. No middlemen. Just great work.
+    </p>
+    <div class="flex gap-16" style="flex-wrap:wrap">
+      <a href="/signup" class="btn btn-primary btn-lg">Find talent</a>
+      <a href="/signup?role=freelancer" class="btn btn-outline btn-lg">Start freelancing</a>
+    </div>
+
+    <!-- Trust stats -->
+    <div class="flex gap-24 mt-48" style="flex-wrap:wrap">
+      <div>
+        <div style="font-family:var(--font-serif);font-size:32px;color:var(--ink)"><%= counts.freelancer_count.toLocaleString() %>+</div>
+        <div style="font-size:13px;color:var(--ink-3)">Verified freelancers</div>
+      </div>
+      <div style="width:1px;background:var(--line)"></div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:32px;color:var(--ink)"><%= counts.open_jobs.toLocaleString() %></div>
+        <div style="font-size:13px;color:var(--ink-3)">Open jobs right now</div>
+      </div>
+      <div style="width:1px;background:var(--line)"></div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:32px;color:var(--ink)"><%= counts.completed_contracts.toLocaleString() %></div>
+        <div style="font-size:13px;color:var(--ink-3)">Projects completed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Categories ────────────────────────────────────────────────────────────-->
+<section class="section" style="background:var(--sunken)">
+  <div class="container">
+    <div class="flex items-center justify-between mb-24" style="flex-wrap:wrap;gap:16px">
+      <h2 class="display-md">Browse by category</h2>
+      <a href="/freelancer/browse" class="btn btn-outline btn-sm">See all jobs →</a>
+    </div>
+    <div class="grid-4">
+      <% categories.forEach(cat => { %>
+      <a href="/freelancer/browse?category=<%= cat.slug %>" class="category-card">
+        <div class="category-icon"><%= cat.icon %></div>
+        <div class="category-name"><%= cat.name %></div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Featured Freelancers ─────────────────────────────────────────────────-->
+<section class="section">
+  <div class="container">
+    <div class="flex items-center justify-between mb-24" style="flex-wrap:wrap;gap:16px">
+      <h2 class="display-md">Top rated talent</h2>
+    </div>
+    <div class="grid-4">
+      <% featuredFreelancers.forEach(fl => { %>
+      <a href="/profile/<%= fl.id %>" class="fl-card">
+        <img src="<%= fl.avatar_url || '/img/default-avatar.svg' %>" alt="<%= fl.name %>" class="fl-avatar">
+        <div class="fl-name"><%= fl.name %></div>
+        <div class="fl-headline"><%= fl.headline || 'Freelancer' %></div>
+        <div class="flex items-center justify-center gap-8 mt-16">
+          <div class="stars">
+            <% for (let i=1; i<=5; i++) { %><span class="star <%= i <= Math.round(fl.avg_rating) ? 'filled' : '' %>">★</span><% } %>
+          </div>
+          <span class="text-sm text-muted">(<%= fl.completed_jobs %> jobs)</span>
+        </div>
+        <% if (fl.hourly_rate) { %>
+          <div style="margin-top:12px;font-size:14px;color:var(--ink-3)">$<%= fl.hourly_rate %>/hr</div>
+        <% } %>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- ─── How it works ──────────────────────────────────────────────────────────-->
+<section class="section" style="background:var(--ink);color:var(--paper)">
+  <div class="container">
+    <h2 class="display-md" style="color:var(--paper);text-align:center;margin-bottom:56px">How Knack works</h2>
+    <div class="grid-3" style="gap:48px;text-align:center">
+      <div>
+        <div style="font-family:var(--font-serif);font-size:64px;color:var(--brand);margin-bottom:16px">01</div>
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;color:var(--paper)">Post your project</h3>
+        <p style="color:#B5AFA7;font-size:14px;line-height:1.7">Describe your project, set a budget, and choose the experience level you need. It takes under five minutes.</p>
+      </div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:64px;color:var(--brand);margin-bottom:16px">02</div>
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;color:var(--paper)">Review proposals</h3>
+        <p style="color:#B5AFA7;font-size:14px;line-height:1.7">Receive tailored proposals from freelancers who match your requirements. Read cover letters, check portfolios, compare rates.</p>
+      </div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:64px;color:var(--brand);margin-bottom:16px">03</div>
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;color:var(--paper)">Get great work done</h3>
+        <p style="color:#B5AFA7;font-size:14px;line-height:1.7">Collaborate on milestones, review deliverables, and release payment when you're satisfied. Simple, secure, transparent.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px">
+      <a href="/signup" class="btn btn-brand btn-lg">Start for free →</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

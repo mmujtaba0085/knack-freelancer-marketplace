@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' — Knack' : 'Knack · Freelancer Marketplace' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>✦</text></svg>">
+</head>
+<body>
+
+<!-- Flash message triggers -->
+<% if (flashSuccess && flashSuccess.length) { %>
+  <span class="flash-success" data-msg="<%= flashSuccess[0] %>" style="display:none"></span>
+<% } %>
+<% if (flashError && flashError.length) { %>
+  <span class="flash-error" data-msg="<%= flashError[0] %>" style="display:none"></span>
+<% } %>
+
+<!-- ─── Navbar ──────────────────────────────────────────────────────────────-->
+<nav class="nav">
+  <div class="nav-inner">
+    <!-- Logo -->
+    <a href="/" class="nav-logo">Knack<span>.</span></a>
+
+    <!-- Desktop links — role-aware (Criterion 11) -->
+    <div class="nav-links">
+      <% if (!sessionUser) { %>
+        <a href="/" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'home' ? 'active' : '' %>">Home</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="/contact" class="nav-link">Contact</a>
+      <% } else if (sessionUser.role === 'client') { %>
+        <a href="/client/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+        <a href="/client/post-job"  class="nav-link">Post a Job</a>
+        <a href="/client/jobs"      class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'jobs' ? 'active' : '' %>">My Jobs</a>
+        <a href="/client/contracts" class="nav-link">Contracts</a>
+      <% } else if (sessionUser.role === 'freelancer') { %>
+        <a href="/freelancer/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+        <a href="/freelancer/browse"    class="nav-link">Browse Jobs</a>
+        <a href="/freelancer/contracts" class="nav-link">Contracts</a>
+        <a href="/freelancer/applications" class="nav-link">Applications</a>
+      <% } else if (sessionUser.role === 'admin') { %>
+        <a href="/admin"          class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+        <a href="/admin/users"    class="nav-link">Users</a>
+        <a href="/admin/disputes" class="nav-link">Disputes</a>
+        <a href="/admin/reports"  class="nav-link">Reports</a>
+      <% } %>
+    </div>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <% if (!sessionUser) { %>
+        <a href="/login"  class="btn btn-ghost btn-sm">Sign in</a>
+        <a href="/signup" class="btn btn-primary btn-sm">Get started</a>
+      <% } else { %>
+        <!-- Notification bell -->
+        <a href="/notifications" class="notif-btn" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-badge"></span>
+        </a>
+        <!-- Avatar + dropdown -->
+        <div class="nav-avatar-wrap">
+          <img src="<%= sessionUser.avatar || '/img/default-avatar.svg' %>" alt="<%= sessionUser.name %>" class="nav-avatar" id="avatar-btn">
+          <div class="nav-dropdown" id="avatar-dropdown">
+            <div style="padding:12px 16px 8px;border-bottom:1px solid var(--line)">
+              <div style="font-weight:600;font-size:14px"><%= sessionUser.name %></div>
+              <div style="font-size:12px;color:var(--ink-3);text-transform:capitalize"><%= sessionUser.role %></div>
+            </div>
+            <a href="/profile">My Profile</a>
+            <% if (sessionUser.role === 'client') { %>
+              <a href="/client/dashboard">Dashboard</a>
+            <% } else if (sessionUser.role === 'freelancer') { %>
+              <a href="/freelancer/dashboard">Dashboard</a>
+            <% } %>
+            <hr>
+            <a href="/logout" style="color:var(--danger)">Sign out</a>
+          </div>
+        </div>
+      <% } %>
+      <!-- Hamburger (mobile) -->
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <% if (!sessionUser) { %>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+    <a href="/login"  class="btn btn-outline btn-full" style="margin-top:16px;border-radius:var(--radius)">Sign in</a>
+    <a href="/signup" class="btn btn-primary btn-full" style="margin-top:10px;border-radius:var(--radius)">Get started</a>
+  <% } else if (sessionUser.role === 'client') { %>
+    <a href="/client/dashboard">Dashboard</a>
+    <a href="/client/post-job">Post a Job</a>
+    <a href="/client/jobs">My Jobs</a>
+    <a href="/client/contracts">Contracts</a>
+    <a href="/notifications">Notifications</a>
+    <a href="/profile">My Profile</a>
+    <a href="/logout" style="color:var(--danger)">Sign out</a>
+  <% } else if (sessionUser.role === 'freelancer') { %>
+    <a href="/freelancer/dashboard">Dashboard</a>
+    <a href="/freelancer/browse">Browse Jobs</a>
+    <a href="/freelancer/contracts">Contracts</a>
+    <a href="/freelancer/applications">Applications</a>
+    <a href="/notifications">Notifications</a>
+    <a href="/profile">My Profile</a>
+    <a href="/logout" style="color:var(--danger)">Sign out</a>
+  <% } else if (sessionUser.role === 'admin') { %>
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/users">Users</a>
+    <a href="/admin/disputes">Disputes</a>
+    <a href="/admin/reports">Reports</a>
+    <a href="/logout" style="color:var(--danger)">Sign out</a>
+  <% } %>
+</div>
+
+<!-- ─── Page content ────────────────────────────────────────────────────────-->
+<main>
+  <%- body %>
+</main>
+
+<!-- ─── Footer ─────────────────────────────────────────────────────────────-->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-cols">
+      <div>
+        <div class="footer-logo">Knack<span>.</span></div>
+        <div class="footer-tagline">The marketplace for serious work.</div>
+        <div class="footer-social">
+          <a href="#" aria-label="Twitter">𝕏</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="Instagram">◎</a>
+        </div>
+      </div>
+      <div>
+        <h4>Marketplace</h4>
+        <a href="/freelancer/browse">Browse Jobs</a>
+        <a href="/client/post-job">Post a Job</a>
+        <a href="/signup">Join as Freelancer</a>
+        <a href="/signup">Hire Talent</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© <%= new Date().getFullYear() %> Knack Technologies Ltd. All rights reserved.</span>
+      <span class="footer-copy">Built with ✦ for serious work.</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

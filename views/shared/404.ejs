@@ -1,0 +1,13 @@
+<%- include('../layouts/header', { title: '404 — Not Found' }) %>
+<div class="error-page">
+  <div>
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page not found.</h1>
+    <p class="error-msg">The page you're looking for doesn't exist or has been moved.</p>
+    <div class="flex gap-12" style="justify-content:center;flex-wrap:wrap">
+      <a href="/"          class="btn btn-primary">Back to home</a>
+      <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+    </div>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

@@ -1,0 +1,39 @@
+<%- include('../layouts/header', { title: 'Set new password' }) %>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Knack<span>.</span></div>
+    <h1 class="auth-title">Set a new password</h1>
+    <p class="auth-sub">Choose something strong and memorable.</p>
+
+    <% if (expired) { %>
+      <div class="alert alert-error"><%= errors[0].msg %></div>
+      <a href="/forgot-password" class="btn btn-primary btn-full" style="margin-top:8px">Request new link</a>
+    <% } else { %>
+      <% if (errors && errors.length) { %>
+        <div class="alert alert-error"><%= errors[0].msg %></div>
+      <% } %>
+      <form action="/reset-password" method="POST" novalidate>
+        <input type="hidden" name="uid"   value="<%= uid %>">
+        <input type="hidden" name="token" value="<%= token %>">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="form-group">
+            <label class="form-label" for="password">New password</label>
+            <input class="form-input" type="password" id="password" name="password"
+              placeholder="Min 8 chars, 1 uppercase, 1 number" required autocomplete="new-password">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
+            <span class="form-hint" id="pw-strength-label"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password_confirm">Confirm password</label>
+            <input class="form-input" type="password" id="password_confirm" name="password_confirm"
+              placeholder="••••••••" required autocomplete="new-password">
+            <span class="form-error" id="confirm-error" style="display:none">⚠ Passwords do not match</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Update password</button>
+        </div>
+      </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../layouts/footer') %>
+<script src="/js/validate.js"></script>

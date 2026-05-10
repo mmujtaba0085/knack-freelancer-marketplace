@@ -1,0 +1,99 @@
+<%- include('../layouts/header', { title: 'Create account' }) %>
+<div class="auth-wrap">
+  <div class="auth-card" style="max-width:480px">
+    <div class="auth-logo">Knack<span>.</span></div>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-sub">Join thousands of clients and freelancers.</p>
+
+    <% if (errors && errors.length && !errors[0].path) { %>
+      <div class="alert alert-error"><%= errors[0].msg %></div>
+    <% } %>
+
+    <!-- Role selector -->
+    <div class="role-selector">
+      <div class="role-option">
+        <input type="radio" name="role_preview" id="role-client" value="client"
+          <%= !body.role || body.role === 'client' ? 'checked' : '' %>>
+        <label class="role-label" for="role-client">
+          <span class="role-icon">◇</span>
+          <span class="role-name">Client</span>
+          <span class="role-desc">I need to hire</span>
+        </label>
+      </div>
+      <div class="role-option">
+        <input type="radio" name="role_preview" id="role-fl" value="freelancer"
+          <%= body.role === 'freelancer' ? 'checked' : '' %>>
+        <label class="role-label" for="role-fl">
+          <span class="role-icon">✦</span>
+          <span class="role-name">Freelancer</span>
+          <span class="role-desc">I want to work</span>
+        </label>
+      </div>
+    </div>
+
+    <form action="/signup" method="POST" novalidate id="signup-form">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Hidden role input synced to visual selector -->
+        <input type="hidden" name="role" id="role-input" value="<%= body.role || 'client' %>">
+
+        <div class="form-group">
+          <label class="form-label" for="name">Full name</label>
+          <input class="form-input <%= errors && errors.find(e=>e.path==='name') ? 'error' : '' %>"
+            type="text" id="name" name="name" value="<%= body.name || '' %>"
+            placeholder="Ada Lovelace" required autocomplete="name">
+          <% if (errors && errors.find(e=>e.path==='name')) { %>
+            <span class="form-error">⚠ <%= errors.find(e=>e.path==='name').msg %></span>
+          <% } else { %>
+            <span class="form-error" style="display:none">⚠ Name is required</span>
+          <% } %>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email address</label>
+          <input class="form-input <%= errors && errors.find(e=>e.path==='email') ? 'error' : '' %>"
+            type="email" id="email" name="email" value="<%= body.email || '' %>"
+            placeholder="you@example.com" required autocomplete="email">
+          <% if (errors && errors.find(e=>e.path==='email')) { %>
+            <span class="form-error" data-email>⚠ <%= errors.find(e=>e.path==='email').msg %></span>
+          <% } else { %>
+            <span class="form-error" data-email style="display:none">⚠ Enter a valid email</span>
+          <% } %>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" name="password"
+            placeholder="Min 8 chars, 1 uppercase, 1 number" required autocomplete="new-password">
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
+          <span class="form-hint" id="pw-strength-label"></span>
+          <% if (errors && errors.find(e=>e.path==='password')) { %>
+            <span class="form-error">⚠ <%= errors.find(e=>e.path==='password').msg %></span>
+          <% } %>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password_confirm">Confirm password</label>
+          <input class="form-input" type="password" id="password_confirm" name="password_confirm"
+            placeholder="••••••••" required autocomplete="new-password">
+          <span class="form-error" id="confirm-error" style="display:none">⚠ Passwords do not match</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">Create account</button>
+      </div>
+    </form>
+
+    <p style="text-align:center;margin-top:24px;font-size:14px;color:var(--ink-3)">
+      Already have an account? <a href="/login" style="color:var(--ink);font-weight:500">Sign in</a>
+    </p>
+  </div>
+</div>
+<%- include('../layouts/footer') %>
+<script src="/js/validate.js"></script>
+<script>
+  // Sync visual role selector to hidden input
+  document.querySelectorAll('input[name="role_preview"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('role-input').value = r.value;
+    });
+  });
+</script>

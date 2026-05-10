@@ -1,0 +1,13 @@
+<%- include('../layouts/header', { title: '403 — Access Denied' }) %>
+<div class="error-page">
+  <div>
+    <div class="error-code">403</div>
+    <h1 class="error-title">Access denied.</h1>
+    <p class="error-msg"><%= message || 'You don\'t have permission to view this page.' %></p>
+    <div class="flex gap-12" style="justify-content:center;flex-wrap:wrap">
+      <a href="/dashboard" class="btn btn-primary">Go to dashboard</a>
+      <a href="/"          class="btn btn-outline">Back to home</a>
+    </div>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

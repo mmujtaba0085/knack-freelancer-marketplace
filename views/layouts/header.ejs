@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' — Knack' : 'Knack · Freelancer Marketplace' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>✦</text></svg>">
+</head>
+<body>
+
+<!-- Flash triggers -->
+<% if (typeof flashSuccess !== 'undefined' && flashSuccess && flashSuccess.length) { %>
+  <span class="flash-success" data-msg="<%= flashSuccess[0] %>" style="display:none"></span>
+<% } %>
+<% if (typeof flashError !== 'undefined' && flashError && flashError.length) { %>
+  <span class="flash-error" data-msg="<%= flashError[0] %>" style="display:none"></span>
+<% } %>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Knack<span>.</span></a>
+    <div class="nav-links">
+      <% const sp = typeof sessionUser !== 'undefined' ? sessionUser : null; %>
+      <% if (!sp) { %>
+        <a href="/"        class="nav-link">Home</a>
+        <a href="/about"   class="nav-link">About</a>
+        <a href="/contact" class="nav-link">Contact</a>
+      <% } else if (sp.role === 'client') { %>
+        <a href="/client/dashboard" class="nav-link">Dashboard</a>
+        <a href="/client/post-job"  class="nav-link">Post a Job</a>
+        <a href="/client/jobs"      class="nav-link">My Jobs</a>
+        <a href="/client/contracts" class="nav-link">Contracts</a>
+        <a href="/client/offers"    class="nav-link">Offers</a>
+        <a href="/messages"         class="nav-link">Messages</a>
+      <% } else if (sp.role === 'freelancer') { %>
+        <a href="/freelancer/dashboard"    class="nav-link">Dashboard</a>
+        <a href="/freelancer/browse"       class="nav-link">Browse Jobs</a>
+        <a href="/freelancer/contracts"    class="nav-link">Contracts</a>
+        <a href="/freelancer/applications" class="nav-link">Applications</a>
+        <a href="/freelancer/offers"       class="nav-link">Offers</a>
+        <a href="/messages"                class="nav-link">Messages</a>
+      <% } else if (sp.role === 'admin') { %>
+        <a href="/admin"          class="nav-link">Dashboard</a>
+        <a href="/admin/users"    class="nav-link">Users</a>
+        <a href="/admin/disputes" class="nav-link">Disputes</a>
+        <a href="/admin/reports"  class="nav-link">Reports</a>
+      <% } %>
+    </div>
+    <div class="nav-actions">
+      <% if (!sp) { %>
+        <a href="/login"  class="btn btn-ghost btn-sm">Sign in</a>
+        <a href="/signup" class="btn btn-primary btn-sm">Get started</a>
+      <% } else { %>
+        <a href="/notifications" class="notif-btn" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-badge"></span>
+        </a>
+        <div class="nav-avatar-wrap">
+          <img src="<%= sp.avatarUrl || '/img/default-avatar.svg' %>" alt="<%= sp.name %>" class="nav-avatar" id="avatar-btn">
+          <div class="nav-dropdown" id="avatar-dropdown">
+            <div style="padding:12px 16px 8px;border-bottom:1px solid var(--line)">
+              <div style="font-weight:600;font-size:14px"><%= sp.name %></div>
+              <div style="font-size:12px;color:var(--ink-3);text-transform:capitalize"><%= sp.role %></div>
+            </div>
+            <a href="/profile">My Profile</a>
+            <% if (sp.role !== 'admin') { %><a href="/dashboard">Dashboard</a><% } %>
+            <hr>
+            <a href="/logout" style="color:var(--danger)">Sign out</a>
+          </div>
+        </div>
+      <% } %>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <% if (!sp) { %>
+    <a href="/">Home</a><a href="/about">About</a><a href="/contact">Contact</a>
+    <a href="/login"  class="btn btn-outline btn-full" style="margin-top:16px">Sign in</a>
+    <a href="/signup" class="btn btn-primary btn-full" style="margin-top:10px">Get started</a>
+  <% } else { %>
+    <% if (sp.role === 'client') { %>
+      <a href="/client/dashboard">Dashboard</a><a href="/client/post-job">Post a Job</a>
+      <a href="/client/jobs">My Jobs</a><a href="/client/contracts">Contracts</a>
+      <a href="/client/offers">Offers</a><a href="/messages">Messages</a>
+    <% } else if (sp.role === 'freelancer') { %>
+      <a href="/freelancer/dashboard">Dashboard</a><a href="/freelancer/browse">Browse Jobs</a>
+      <a href="/freelancer/contracts">Contracts</a><a href="/freelancer/applications">Applications</a>
+      <a href="/freelancer/offers">Offers</a><a href="/freelancer/saved-jobs">Saved Jobs</a>
+      <a href="/messages">Messages</a>
+    <% } else { %>
+      <a href="/admin">Dashboard</a><a href="/admin/users">Users</a>
+      <a href="/admin/disputes">Disputes</a><a href="/admin/reports">Reports</a>
+    <% } %>
+    <a href="/notifications">Notifications</a>
+    <a href="/profile">My Profile</a>
+    <a href="/logout" style="color:var(--danger)">Sign out</a>
+  <% } %>
+</div>
+
+<main>

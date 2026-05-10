@@ -1,0 +1,46 @@
+<%- include('../layouts/header', { title: 'Sign in' }) %>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Knack<span>.</span></div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Sign in to your account to continue.</p>
+
+    <% if (errors && errors.length) { %>
+      <div class="alert alert-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <%= errors[0].msg %>
+      </div>
+    <% } %>
+
+    <form action="/login" method="POST" novalidate>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="form-group">
+          <label class="form-label" for="email">Email address</label>
+          <input class="form-input <%= errors && errors.find(e=>e.path==='email') ? 'error' : '' %>"
+            type="email" id="email" name="email" value="<%= body.email || '' %>"
+            placeholder="you@example.com" required autocomplete="email">
+          <% if (errors && errors.find(e=>e.path==='email')) { %>
+            <span class="form-error">⚠ <%= errors.find(e=>e.path==='email').msg %></span>
+          <% } %>
+        </div>
+
+        <div class="form-group">
+          <div class="flex justify-between items-center">
+            <label class="form-label" for="password">Password</label>
+            <a href="/forgot-password" class="text-sm" style="color:var(--brand)">Forgot password?</a>
+          </div>
+          <input class="form-input" type="password" id="password" name="password"
+            placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">Sign in</button>
+      </div>
+    </form>
+
+    <p style="text-align:center;margin-top:24px;font-size:14px;color:var(--ink-3)">
+      Don't have an account? <a href="/signup" style="color:var(--ink);font-weight:500">Sign up</a>
+    </p>
+  </div>
+</div>
+<%- include('../layouts/footer') %>
+<script src="/js/validate.js"></script>
