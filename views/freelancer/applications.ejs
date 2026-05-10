@@ -1,0 +1,49 @@
+<%- include('../layouts/header', { title: 'My Applications' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <h1 style="font-family:var(--font-serif);font-size:32px;margin-bottom:32px">My Applications</h1>
+
+  <% if (!proposals.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">✦</div>
+      <h3>No applications yet</h3>
+      <p>Find a job that matches your skills and submit your first proposal.</p>
+      <a href="/freelancer/browse" class="btn btn-primary">Browse jobs</a>
+    </div>
+  <% } else { %>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Client</th>
+              <th>Your bid</th>
+              <th>Delivery</th>
+              <th>Status</th>
+              <th>Applied</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% proposals.forEach(p => { %>
+            <tr>
+              <td>
+                <a href="/jobs/<%= p.job_id %>" style="font-weight:500;color:var(--ink)">
+                  <%= p.job_title.substring(0,45) %><%= p.job_title.length>45?'…':'' %>
+                </a>
+              </td>
+              <td class="text-muted text-sm"><%= p.client_name %></td>
+              <td style="font-family:var(--font-serif)">$<%= Number(p.proposed_budget).toLocaleString() %></td>
+              <td class="text-muted text-sm"><%= p.estimated_days %> days</td>
+              <td><span class="badge badge-<%= p.status %>"><%= p.status %></span></td>
+              <td class="text-muted text-sm"><%= new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) %></td>
+              <td><a href="/proposals/<%= p.id %>/chat" class="btn btn-ghost btn-sm" style="font-size:13px">💬</a></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
