@@ -22,44 +22,54 @@ A full-stack freelancer marketplace built with Node.js, Express, MySQL, and EJS 
 |---|---|
 | ![Home](public/img/screenshots/01-home.png) | ![Signup](public/img/screenshots/02-signup.png) |
 | **Home — landing page** | **Signup — role selection & validation** |
-| ![Login](public/img/screenshots/03-login.png) | ![Notifications](public/img/screenshots/14-notifications.png) |
-| **Login** | **Notifications centre** |
+| ![Login](public/img/screenshots/03-login.png) | ![About](public/img/screenshots/04-about.png) |
+| **Login** | **About page** |
 
 ### Freelancer
 | | |
 |---|---|
-| ![Freelancer Dashboard](public/img/screenshots/04-freelancer-dashboard.png) | ![Browse Jobs](public/img/screenshots/05-browse-jobs.png) |
-| **Freelancer dashboard** | **Browse jobs with filters** |
-| ![Applications](public/img/screenshots/06-applications.png) | ![Freelancer Contracts](public/img/screenshots/07-freelancer-contracts.png) |
-| **My applications** | **Active contracts** |
-| ![Profile](public/img/screenshots/11-profile.png) | ![Edit Profile](public/img/screenshots/12-edit-profile.png) |
-| **Public profile with portfolio** | **Edit profile & skills** |
-| ![Freelancer Offers](public/img/screenshots/13-freelancer-offers.png) | ![Saved Jobs](public/img/screenshots/22-saved-jobs.png) |
-| **Incoming offers** | **Saved / bookmarked jobs** |
+| ![Freelancer Dashboard](public/img/screenshots/05-freelancer-dashboard.png) | ![Browse Jobs](public/img/screenshots/06-browse-jobs.png) |
+| **Freelancer dashboard** | **Browse jobs with category & budget filters** |
+| ![Applications](public/img/screenshots/07-applications.png) | ![Freelancer Contracts](public/img/screenshots/08-freelancer-contracts.png) |
+| **My applications** | **Active contracts list** |
+| ![Profile](public/img/screenshots/13-profile.png) | ![Edit Profile](public/img/screenshots/14-edit-profile.png) |
+| **Public profile with portfolio & ratings** | **Edit profile, skills & availability** |
+| ![Portfolio Section](public/img/screenshots/14b-portfolio.png) | ![Saved Jobs](public/img/screenshots/17-saved-jobs.png) |
+| **Portfolio management section** | **Saved / bookmarked jobs** |
+| ![Freelancer Offers](public/img/screenshots/16-freelancer-offers.png) | ![Notifications](public/img/screenshots/15-notifications.png) |
+| **Incoming direct offers** | **Notifications centre** |
 
-### Contracts & Messaging
+### Contracts & Milestones
 | | |
 |---|---|
-| ![Contract Detail](public/img/screenshots/08-contract-detail.png) | ![Chat](public/img/screenshots/10-chat.png) |
-| **Contract detail — milestones & deliverables** | **In-contract chat with file sharing** |
-| ![Messages Inbox](public/img/screenshots/09-messages-inbox.png) | |
-| **Unified messages inbox** | |
+| ![Contract Detail](public/img/screenshots/09-contract-detail.png) | ![Milestones](public/img/screenshots/09b-contract-milestones.png) |
+| **Contract detail — overview & deliverables** | **Milestone tracking with approve / revision flow** |
+
+### Messaging
+| | |
+|---|---|
+| ![Messages Inbox](public/img/screenshots/12-messages-inbox.png) | ![Contract Chat](public/img/screenshots/10-chat-contract.png) |
+| **Unified messages inbox** | **In-contract chat** |
+| ![Proposal Chat](public/img/screenshots/11-chat-proposal.png) | |
+| **Pre-hire proposal chat** | |
 
 ### Client
 | | |
 |---|---|
-| ![Client Dashboard](public/img/screenshots/15-client-dashboard.png) | ![Post Job](public/img/screenshots/16-post-job.png) |
-| **Client dashboard** | **Post a job** |
-| ![My Jobs](public/img/screenshots/17-client-jobs.png) | ![Proposals](public/img/screenshots/18-proposals.png) |
-| **My jobs list** | **Proposals per job — accept / decline** |
+| ![Client Dashboard](public/img/screenshots/18-client-dashboard.png) | ![Post Job](public/img/screenshots/19-post-job.png) |
+| **Client dashboard** | **Post a job with skill tags** |
+| ![My Jobs](public/img/screenshots/20-client-jobs.png) | ![Proposals](public/img/screenshots/21-proposals.png) |
+| **My jobs list** | **Proposals per job — accept / decline / message** |
+| ![Client Contracts](public/img/screenshots/22-client-contracts.png) | ![Send Offer](public/img/screenshots/23-send-offer.png) |
+| **Client contracts list** | **Send a direct offer to a freelancer** |
 
 ### Admin
 | | |
 |---|---|
-| ![Admin Dashboard](public/img/screenshots/19-admin-dashboard.png) | ![Admin Users](public/img/screenshots/20-admin-users.png) |
-| **Admin dashboard** | **User management** |
-| ![Admin Disputes](public/img/screenshots/21-admin-disputes.png) | |
-| **Dispute queue** | |
+| ![Admin Dashboard](public/img/screenshots/24-admin-dashboard.png) | ![Admin Users](public/img/screenshots/25-admin-users.png) |
+| **Admin dashboard — platform stats** | **User management — activate / deactivate / change role** |
+| ![Admin Disputes](public/img/screenshots/26-admin-disputes.png) | ![Admin Reports](public/img/screenshots/27-admin-reports.png) |
+| **Dispute queue with category & reason** | **Platform GMV reports** |
 
 ---
 
