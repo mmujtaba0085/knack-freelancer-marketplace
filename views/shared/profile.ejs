@@ -1,0 +1,149 @@
+<%- include('../layouts/header', { title: profile.name + ' · Profile' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+
+  <!-- Profile header -->
+  <div class="profile-header">
+    <img src="<%= profile.avatar_url || '/img/default-avatar.svg' %>" alt="<%= profile.name %>" class="profile-avatar">
+    <div style="flex:1">
+      <div class="flex items-center gap-12" style="flex-wrap:wrap;margin-bottom:8px">
+        <h1 class="profile-name"><%= profile.name %></h1>
+        <% if (profile.availability === 'open') { %>
+          <span class="badge badge-accepted">Available</span>
+        <% } else if (profile.availability === 'busy') { %>
+          <span class="badge badge-progress">Busy</span>
+        <% } else { %>
+          <span class="badge badge-completed">Unavailable</span>
+        <% } %>
+      </div>
+      <% if (profile.headline) { %><p style="font-size:17px;color:var(--ink-2);margin-bottom:12px"><%= profile.headline %></p><% } %>
+      <div class="flex gap-16 mb-16" style="flex-wrap:wrap">
+        <% if (profile.location) { %><span class="text-muted text-sm">📍 <%= profile.location %></span><% } %>
+        <% if (profile.hourly_rate) { %><span class="text-muted text-sm">$<%= profile.hourly_rate %>/hr</span><% } %>
+        <span class="text-muted text-sm"><%= completedJobs %> project<%= completedJobs!==1?'s':'' %> completed</span>
+      </div>
+      <% if (ratingStats.review_count > 0) { %>
+        <div class="flex items-center gap-8">
+          <div class="stars">
+            <% for(let i=1;i<=5;i++){%><span class="star <%=i<=Math.round(ratingStats.avg_rating)?'filled':''%>">★</span><%}%>
+          </div>
+          <span style="font-weight:600"><%= Number(ratingStats.avg_rating).toFixed(1) %></span>
+          <span class="text-muted text-sm">(<%= ratingStats.review_count %> review<%= ratingStats.review_count!==1?'s':'' %>)</span>
+        </div>
+      <% } %>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <% const sp2 = typeof sessionUser !== 'undefined' ? sessionUser : null; %>
+      <% if (sp2 && sp2.id === profile.id) { %>
+        <a href="/profile" class="btn btn-outline btn-sm">Edit profile</a>
+      <% } else if (sp2 && sp2.role === 'client' && profile.role === 'freelancer') { %>
+        <a href="/freelancers/<%= profile.id %>/offer" class="btn btn-primary btn-sm">Send offer →</a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:32px;align-items:start;margin-top:32px">
+    <div>
+      <!-- Bio -->
+      <% if (profile.bio) { %>
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">About</h3>
+        <p style="font-size:14px;line-height:1.8;color:var(--ink-2)"><%- profile.bio.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') %></p>
+      </div>
+      <% } %>
+
+      <!-- Skills -->
+      <% if (skills.length) { %>
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">Skills</h3>
+        <div class="flex gap-8" style="flex-wrap:wrap">
+          <% skills.forEach(s => { %><span class="skill-tag"><%= s.name %></span><% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Portfolio -->
+      <% if (portfolio && portfolio.length) { %>
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">Portfolio (<%= portfolio.length %>)</h3>
+        <div class="portfolio-grid">
+          <% portfolio.forEach(p => { %>
+          <div class="portfolio-item">
+            <% if (p.image_url) { %>
+              <a href="<%= p.external_url || p.image_url %>" target="_blank">
+                <img src="<%= p.image_url %>" alt="<%= p.title %>" class="portfolio-img">
+              </a>
+            <% } else if (p.external_url) { %>
+              <a href="<%= p.external_url %>" target="_blank" class="portfolio-link-placeholder">
+                <span style="font-size:24px">🔗</span>
+              </a>
+            <% } else { %>
+              <div class="portfolio-link-placeholder"><span style="font-size:24px">✦</span></div>
+            <% } %>
+            <div class="portfolio-info">
+              <div style="font-weight:600;font-size:13px"><%= p.title %></div>
+              <% if (p.description) { %><div class="text-muted text-sm" style="font-size:12px;margin-top:2px"><%= p.description %></div><% } %>
+              <% if (p.external_url) { %><a href="<%= p.external_url %>" target="_blank" class="text-sm" style="color:var(--brand);font-size:12px">View →</a><% } %>
+            </div>
+            <% if (sp2 && sp2.id === profile.id) { %>
+            <form action="/portfolio/<%= p.id %>/delete" method="POST" style="position:absolute;top:6px;right:6px">
+              <button type="submit" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--danger);background:rgba(255,255,255,.9)"
+                data-confirm="Remove this portfolio item?">×</button>
+            </form>
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Add portfolio item (own profile only, freelancer) -->
+      <% if (sp2 && sp2.id === profile.id && profile.role === 'freelancer') { %>
+      <details class="card" style="margin-bottom:24px">
+        <summary style="cursor:pointer;font-weight:600;font-size:14px;list-style:none">+ Add portfolio item</summary>
+        <form action="/portfolio" method="POST" enctype="multipart/form-data" style="margin-top:16px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <input class="form-input" type="text" name="title" placeholder="Project title *" required>
+            <textarea class="form-textarea" name="description" rows="2" placeholder="Brief description" style="min-height:60px"></textarea>
+            <div>
+              <label class="form-label" style="font-size:13px">Image (optional)</label>
+              <input class="form-input" type="file" name="image" accept="image/*">
+            </div>
+            <input class="form-input" type="url" name="external_url" placeholder="Link to project (optional)">
+            <button type="submit" class="btn btn-outline btn-sm" style="align-self:flex-start">Add item</button>
+          </div>
+        </form>
+      </details>
+      <% } %>
+    </div>
+
+    <!-- Reviews -->
+    <div>
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:16px">
+        Reviews <%= ratingStats.review_count > 0 ? '(' + ratingStats.review_count + ')' : '' %>
+      </h3>
+      <% if (!reviews.length) { %>
+        <div class="card card-sunken" style="text-align:center;padding:32px">
+          <p class="text-muted text-sm">No reviews yet.</p>
+        </div>
+      <% } else { %>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <% reviews.forEach(r => { %>
+          <div class="card">
+            <div class="flex items-center justify-between mb-10">
+              <div class="flex items-center gap-8">
+                <div class="stars">
+                  <% for(let i=1;i<=5;i++){%><span class="star <%=i<=r.rating?'filled':''%>">★</span><%}%>
+                </div>
+                <span class="text-sm text-muted">by <%= r.reviewer_name %></span>
+              </div>
+              <span class="text-sm text-muted"><%= new Date(r.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}) %></span>
+            </div>
+            <p style="font-size:14px;color:var(--ink-2);line-height:1.6"><%= r.comment %></p>
+          </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

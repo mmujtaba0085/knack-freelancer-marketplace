@@ -1,0 +1,139 @@
+<%- include('../layouts/header', { title: 'Edit Profile' }) %>
+<div class="container-sm" style="padding-top:48px;padding-bottom:64px">
+  <div class="page-header">
+    <h1>Edit Profile</h1>
+    <p class="text-muted mt-8">Update your public profile and skills.</p>
+  </div>
+
+  <% if (errors && errors.length) { %>
+    <div class="alert alert-error"><%= errors[0].msg %></div>
+  <% } %>
+
+  <form action="/profile" method="POST" enctype="multipart/form-data">
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Avatar -->
+      <div class="form-group">
+        <label class="form-label">Profile photo</label>
+        <div class="flex items-center gap-16">
+          <img src="<%= profile.avatar_url || '/img/default-avatar.svg' %>" alt="Avatar"
+            style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--line)">
+          <input class="form-input" type="file" name="avatar" accept="image/*" style="flex:1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" name="name" value="<%= profile.name %>" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Headline</label>
+        <input class="form-input" type="text" name="headline" value="<%= profile.headline||'' %>"
+          placeholder="e.g. Brand & Editorial Designer">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea class="form-textarea" name="bio" rows="5" placeholder="Tell clients about yourself…"><%= profile.bio||'' %></textarea>
+      </div>
+
+      <div class="grid-2" style="gap:16px">
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-input" type="text" name="location" value="<%= profile.location||'' %>" placeholder="City, Country">
+        </div>
+        <% if (profile.role === 'freelancer') { %>
+        <div class="form-group">
+          <label class="form-label">Hourly rate ($)</label>
+          <input class="form-input" type="number" name="hourly_rate" value="<%= profile.hourly_rate||'' %>" min="1" placeholder="75">
+        </div>
+        <% } %>
+      </div>
+
+      <% if (profile.role === 'freelancer') { %>
+      <div class="form-group">
+        <label class="form-label">Availability</label>
+        <select class="form-select" name="availability">
+          <option value="open"        <%= profile.availability==='open'?'selected':'' %>>Open to work</option>
+          <option value="busy"        <%= profile.availability==='busy'?'selected':'' %>>Busy</option>
+          <option value="unavailable" <%= profile.availability==='unavailable'?'selected':'' %>>Unavailable</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Skills</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:1.5px solid var(--line);border-radius:var(--radius);background:var(--white)">
+          <% allSkills.forEach(s => { %>
+            <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:13px;transition:all .2s"
+              class="skill-checkbox-label">
+              <input type="checkbox" name="skills" value="<%= s.id %>"
+                <%= mySkills.some(ms=>ms.id===s.id)?'checked':'' %>
+                style="accent-color:var(--brand);width:14px;height:14px">
+              <%= s.name %>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="flex gap-12">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a href="/profile/<%= profile.id %>" class="btn btn-ghost">Cancel</a>
+      </div>
+    </div>
+  </form>
+
+  <% if (profile.role === 'freelancer') { %>
+  <hr style="margin:40px 0;border:none;border-top:1px solid var(--line)">
+  <div class="page-header">
+    <h2 style="font-size:20px">Portfolio</h2>
+    <p class="text-muted mt-4">Showcase your best work. Up to 8 items.</p>
+  </div>
+
+  <% if (portfolio && portfolio.length) { %>
+  <div class="portfolio-grid" style="margin-bottom:24px">
+    <% portfolio.forEach(p => { %>
+    <div class="portfolio-item">
+      <% if (p.image_url) { %>
+        <img src="<%= p.image_url %>" alt="<%= p.title %>" class="portfolio-img">
+      <% } else { %>
+        <div class="portfolio-link-placeholder"><span>✦</span></div>
+      <% } %>
+      <div class="portfolio-info">
+        <div style="font-weight:600;font-size:13px"><%= p.title %></div>
+        <% if (p.external_url) { %><a href="<%= p.external_url %>" target="_blank" class="text-sm" style="font-size:12px;color:var(--brand)">View →</a><% } %>
+      </div>
+      <form action="/portfolio/<%= p.id %>/delete" method="POST" style="position:absolute;top:6px;right:6px">
+        <button type="submit" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--danger);background:rgba(255,255,255,.9)"
+          data-confirm="Remove this item?">×</button>
+      </form>
+    </div>
+    <% }) %>
+  </div>
+  <% } %>
+
+  <% if (!portfolio || portfolio.length < 8) { %>
+  <div class="card" style="margin-bottom:32px">
+    <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">Add portfolio item</h3>
+    <form action="/portfolio" method="POST" enctype="multipart/form-data">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <input class="form-input" type="text" name="title" placeholder="Project title *" required>
+        <textarea class="form-textarea" name="description" rows="2" placeholder="Brief description" style="min-height:60px"></textarea>
+        <div class="form-group">
+          <label class="form-label" style="font-size:13px">Cover image (optional)</label>
+          <input class="form-input" type="file" name="image" accept="image/*">
+        </div>
+        <input class="form-input" type="url" name="external_url" placeholder="Link to project or case study (optional)">
+        <button type="submit" class="btn btn-outline btn-sm" style="align-self:flex-start">Add item</button>
+      </div>
+    </form>
+  </div>
+  <% } %>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
+<style>
+  input[type="checkbox"]:checked + * { color: var(--ink); }
+  .skill-checkbox-label:has(input:checked) { border-color: var(--ink); background: var(--sunken); }
+</style>
