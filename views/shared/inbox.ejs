@@ -1,0 +1,68 @@
+<%- include('../layouts/header', { title: 'Messages' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px;max-width:760px">
+  <h1 style="font-family:var(--font-serif);font-size:32px;margin-bottom:32px">Messages</h1>
+
+  <% if (!threads.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">💬</div>
+      <h3>No conversations yet</h3>
+      <p>Messages with clients and freelancers will appear here once a proposal or contract is created.</p>
+    </div>
+  <% } else { %>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <% threads.forEach(t => { %>
+      <%
+        const chatUrl = t.thread_type === 'proposal'
+          ? `/proposals/${t.thread_id}/chat`
+          : `/contracts/${t.thread_id}/chat`;
+        const preview = t.last_body
+          ? (t.last_body.length > 60 ? t.last_body.substring(0,60) + '…' : t.last_body)
+          : (t.last_file_type === 'image' ? '📷 Image' : t.last_file_type === 'pdf' ? '📄 PDF' : '📎 File');
+        const timeStr = t.last_at ? new Date(t.last_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      %>
+      <a href="<%= chatUrl %>" class="inbox-row">
+        <img src="<%= t.other_avatar || '/img/default-avatar.svg' %>" alt="<%= t.other_name %>" class="inbox-avatar">
+        <div class="inbox-body">
+          <div class="inbox-top">
+            <span class="inbox-name"><%= t.other_name %></span>
+            <span class="inbox-time"><%= timeStr %></span>
+          </div>
+          <div class="inbox-job"><%= t.job_title.length > 50 ? t.job_title.substring(0,50)+'…' : t.job_title %></div>
+          <div class="inbox-preview"><%= preview %></div>
+        </div>
+        <% if (t.unread_approx > 0) { %>
+          <span class="inbox-unread"><%= t.unread_approx > 99 ? '99+' : t.unread_approx %></span>
+        <% } %>
+      </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
+<style>
+  .inbox-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1.5px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 6px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .inbox-row:hover { border-color: var(--brand); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .inbox-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid var(--line); }
+  .inbox-body { flex: 1; min-width: 0; }
+  .inbox-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .inbox-name { font-weight: 600; font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox-time { font-size: 12px; color: var(--ink-3); flex-shrink: 0; }
+  .inbox-job { font-size: 12px; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox-preview { font-size: 13px; color: var(--ink-2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox-unread {
+    background: var(--brand); color: #fff; font-size: 11px; font-weight: 700;
+    border-radius: 999px; padding: 2px 7px; flex-shrink: 0; min-width: 20px; text-align: center;
+  }
+</style>

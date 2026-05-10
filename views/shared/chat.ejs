@@ -1,0 +1,162 @@
+<%
+  const thread = proposal || contract;
+  const threadTitle = proposal ? proposal.job_title : contract.job_title;
+  const otherId = proposal
+    ? (isClient ? proposal.freelancer_id : proposal.client_id)
+    : (isClient ? contract.freelancer_id : contract.client_id);
+  const otherName  = isClient
+    ? (proposal ? proposal.freelancer_name : contract.freelancer_name)
+    : (proposal ? proposal.client_name    : contract.client_name);
+  const otherAvatar = isClient
+    ? (proposal ? proposal.freelancer_avatar : contract.freelancer_avatar)
+    : (proposal ? proposal.client_avatar     : contract.client_avatar);
+  const hiddenField = proposal
+    ? `<input type="hidden" name="proposal_id" value="${proposal.id}">`
+    : `<input type="hidden" name="contract_id" value="${contract.id}">`;
+  const myId = sessionUser ? sessionUser.id : -1;
+%>
+<%- include('../layouts/header', { title: 'Chat · ' + threadTitle }) %>
+
+<div class="chat-page">
+  <!-- Chat header -->
+  <div class="chat-header">
+    <div class="container" style="display:flex;align-items:center;gap:16px;height:100%">
+      <a href="<%= backUrl %>" class="btn btn-ghost btn-sm" style="padding:6px 10px">←</a>
+      <img src="<%= otherAvatar || '/img/default-avatar.svg' %>" alt="<%= otherName %>"
+        style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--line)">
+      <div>
+        <div style="font-weight:600;font-size:15px"><%= otherName %></div>
+        <div class="text-muted text-sm" style="font-size:12px"><%= threadTitle %></div>
+      </div>
+      <% if (contract) { %>
+        <a href="/contracts/<%= contract.id %>" class="btn btn-outline btn-sm" style="margin-left:auto">View contract</a>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Message thread -->
+  <div class="chat-body" id="chat-body">
+    <% if (!messages.length) { %>
+      <div style="text-align:center;padding:48px 24px">
+        <div style="font-size:32px;margin-bottom:12px">💬</div>
+        <p class="text-muted text-sm">No messages yet. Say hello!</p>
+      </div>
+    <% } %>
+    <% messages.forEach(m => {
+      const mine = m.sender_id === myId;
+    %>
+    <div class="chat-msg <%= mine ? 'mine' : 'theirs' %>" data-id="<%= m.id %>">
+      <% if (!mine) { %>
+        <img src="<%= m.sender_avatar || '/img/default-avatar.svg' %>" alt="<%= m.sender_name %>"
+          class="chat-avatar">
+      <% } %>
+      <div class="chat-bubble">
+        <% if (!mine) { %><div class="chat-sender"><%= m.sender_name %></div><% } %>
+        <% if (m.body) { %><div class="chat-text"><%= m.body %></div><% } %>
+        <% if (m.file_url) { %>
+          <% if (m.file_type === 'image') { %>
+            <a href="<%= m.file_url %>" target="_blank">
+              <img src="<%= m.file_url %>" alt="<%= m.file_name %>" class="chat-img">
+            </a>
+          <% } else { %>
+            <a href="<%= m.file_url %>" target="_blank" class="chat-file-link">
+              <span><%= m.file_type === 'pdf' ? '📄' : '📎' %></span>
+              <%= m.file_name || 'Download file' %>
+            </a>
+          <% } %>
+        <% } %>
+        <div class="chat-time">
+          <%= new Date(m.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) %>
+          · <%= new Date(m.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) %>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <!-- Compose area -->
+  <div class="chat-footer">
+    <div class="container">
+      <form action="/messages/send" method="POST" enctype="multipart/form-data" class="chat-form" id="chat-form">
+        <%- hiddenField %>
+        <label class="chat-attach-btn" title="Attach file">
+          📎
+          <input type="file" name="file" id="file-input" style="display:none"
+            accept="image/*,.pdf,.doc,.docx,.zip,.txt">
+        </label>
+        <div class="chat-input-wrap">
+          <input class="chat-input" type="text" name="body" id="chat-input"
+            placeholder="Type a message…" autocomplete="off">
+          <div id="file-preview" class="chat-file-preview" style="display:none"></div>
+        </div>
+        <button type="submit" class="chat-send-btn">Send →</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>
+
+<script>
+  // Scroll to bottom on load
+  const body = document.getElementById('chat-body');
+  body.scrollTop = body.scrollHeight;
+
+  // File preview
+  document.getElementById('file-input').addEventListener('change', function() {
+    const prev = document.getElementById('file-preview');
+    if (this.files[0]) {
+      const name = this.files[0].name;
+      prev.style.display = 'flex';
+      prev.innerHTML = `<span>📎 ${name}</span><button type="button" onclick="clearFile()" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:18px;line-height:1">×</button>`;
+    }
+  });
+  function clearFile() {
+    document.getElementById('file-input').value = '';
+    const prev = document.getElementById('file-preview');
+    prev.style.display = 'none';
+    prev.innerHTML = '';
+  }
+
+  // Allow Enter to submit (Shift+Enter for newline)
+  document.getElementById('chat-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('chat-form').submit();
+    }
+  });
+
+  <% if (contract) { %>
+  // Poll for new messages every 4s on contract chats
+  let lastId = <%= messages.length ? messages[messages.length-1].id : 0 %>;
+  setInterval(async () => {
+    try {
+      const r = await fetch(`/api/contracts/<%= contract.id %>/messages?after=${lastId}`);
+      const msgs = await r.json();
+      if (!msgs.length) return;
+      msgs.forEach(m => {
+        lastId = Math.max(lastId, m.id);
+        const mine = m.sender_id === <%= myId %>;
+        const div = document.createElement('div');
+        div.className = `chat-msg ${mine ? 'mine' : 'theirs'}`;
+        div.dataset.id = m.id;
+        let inner = mine ? '' : `<img src="${m.sender_avatar || '/img/default-avatar.svg'}" class="chat-avatar">`;
+        inner += `<div class="chat-bubble">`;
+        if (!mine) inner += `<div class="chat-sender">${m.sender_name}</div>`;
+        if (m.body) inner += `<div class="chat-text">${m.body.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+        if (m.file_url) {
+          if (m.file_type === 'image') {
+            inner += `<a href="${m.file_url}" target="_blank"><img src="${m.file_url}" class="chat-img"></a>`;
+          } else {
+            inner += `<a href="${m.file_url}" target="_blank" class="chat-file-link">📎 ${m.file_name || 'Download'}</a>`;
+          }
+        }
+        inner += `<div class="chat-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+        div.innerHTML = inner;
+        body.appendChild(div);
+      });
+      body.scrollTop = body.scrollHeight;
+    } catch(e) {}
+  }, 4000);
+  <% } %>
+</script>
