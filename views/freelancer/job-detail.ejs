@@ -1,0 +1,97 @@
+<%- include('../layouts/header', { title: job.title }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <a href="/freelancer/browse" class="text-sm text-muted" style="display:inline-block;margin-bottom:20px">← Browse jobs</a>
+
+  <div class="grid-2" style="gap:32px;align-items:start">
+    <!-- Job detail -->
+    <div>
+      <div class="flex items-center gap-12 mb-16" style="flex-wrap:wrap">
+        <span class="badge badge-open"><%= job.category_name || 'General' %></span>
+        <span class="badge badge-<%= job.level %>"><%= job.level %></span>
+      </div>
+      <h1 style="font-family:var(--font-serif);font-size:32px;margin-bottom:16px"><%= job.title %></h1>
+
+      <div class="flex gap-24 mb-24" style="flex-wrap:wrap">
+        <div>
+          <div class="text-xs text-muted">Budget</div>
+          <div style="font-family:var(--font-serif);font-size:22px;margin-top:4px">
+            $<%= Number(job.budget_min).toLocaleString() %> – $<%= Number(job.budget_max).toLocaleString() %>
+          </div>
+        </div>
+        <% if (job.deadline) { %>
+        <div>
+          <div class="text-xs text-muted">Deadline</div>
+          <div style="font-size:16px;font-weight:500;margin-top:4px"><%= new Date(job.deadline).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %></div>
+        </div>
+        <% } %>
+        <div>
+          <div class="text-xs text-muted">Proposals</div>
+          <div style="font-size:16px;font-weight:500;margin-top:4px"><%= job.proposal_count %></div>
+        </div>
+      </div>
+
+      <div class="card card-sunken" style="margin-bottom:24px">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--ink-2)">About this project</h3>
+        <div style="font-size:14px;line-height:1.8;color:var(--ink-2)"><%- job.description.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') %></div>
+      </div>
+
+      <% if (job.skills_text) { %>
+      <div>
+        <div class="text-xs text-muted" style="margin-bottom:10px">Skills required</div>
+        <div class="flex gap-8" style="flex-wrap:wrap">
+          <% job.skills_text.split(',').forEach(s => { %>
+            <span class="skill-tag"><%= s.trim() %></span>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--line)">
+        <div class="text-xs text-muted" style="margin-bottom:4px">Posted by</div>
+        <div style="font-weight:500"><%= job.client_name %></div>
+      </div>
+    </div>
+
+    <!-- Apply panel -->
+    <div style="position:sticky;top:88px">
+      <% if (applied) { %>
+        <div class="card" style="text-align:center;padding:32px">
+          <div style="font-size:32px;margin-bottom:12px">✓</div>
+          <h3 style="font-family:var(--font-serif);font-size:22px;margin-bottom:8px">Proposal submitted</h3>
+          <p class="text-muted text-sm">Status: <span class="badge badge-<%= applied.status %>"><%= applied.status %></span></p>
+          <a href="/freelancer/applications" class="btn btn-outline btn-sm" style="margin-top:16px">View my applications</a>
+        </div>
+      <% } else { %>
+        <div class="card">
+          <h3 style="font-family:var(--font-serif);font-size:22px;margin-bottom:4px">Submit a proposal</h3>
+          <p class="text-muted text-sm" style="margin-bottom:24px">Tailor your pitch to this specific job.</p>
+
+          <form action="/jobs/<%= job.id %>/apply" method="POST" novalidate>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="form-group">
+                <label class="form-label">Your bid ($) <span style="color:var(--brand)">*</span></label>
+                <input class="form-input" type="number" name="proposed_budget"
+                  placeholder="<%= job.budget_min %>" min="1" required>
+                <span class="form-hint">Client budget: $<%= Number(job.budget_min).toLocaleString() %>–$<%= Number(job.budget_max).toLocaleString() %></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Delivery time (days) <span style="color:var(--brand)">*</span></label>
+                <input class="form-input" type="number" name="estimated_days"
+                  placeholder="7" min="1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cover letter <span style="color:var(--brand)">*</span></label>
+                <textarea class="form-textarea" name="cover_letter" rows="6"
+                  placeholder="Why are you the right fit? What's your approach?" required style="min-height:140px"></textarea>
+                <span class="form-hint">Minimum 100 characters. Be specific.</span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Send proposal</button>
+            </div>
+          </form>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('../layouts/footer') %>
+<script src="/js/validate.js"></script>
