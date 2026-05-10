@@ -1,0 +1,41 @@
+<%- include('../layouts/header', { title: 'Notifications' }) %>
+<div class="container-sm" style="padding-top:40px;padding-bottom:64px">
+  <div class="flex items-center justify-between" style="margin-bottom:28px">
+    <h1 style="font-family:var(--font-serif);font-size:32px">Notifications</h1>
+    <% if (notifs.length) { %>
+      <button onclick="markAllRead()" class="btn btn-ghost btn-sm">Mark all read</button>
+    <% } %>
+  </div>
+
+  <% if (!notifs.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon" style="font-size:40px">✦</div>
+      <h3>You're all caught up</h3>
+      <p>No notifications yet.</p>
+    </div>
+  <% } else { %>
+    <div class="card" style="padding:0">
+      <% notifs.forEach(n => { %>
+      <div class="notif-item" style="padding:16px 20px;border-bottom:1px solid var(--line)">
+        <div class="notif-dot <%= n.is_read ? 'read' : '' %>"></div>
+        <div class="notif-content">
+          <% if (n.link) { %>
+            <a href="<%= n.link %>" class="notif-msg" style="color:var(--ink)"><%= n.message %></a>
+          <% } else { %>
+            <div class="notif-msg"><%= n.message %></div>
+          <% } %>
+          <div class="notif-time"><%= new Date(n.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) %></div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
+<script>
+  async function markAllRead() {
+    await fetch('/api/notifications/mark-read', { method: 'POST' });
+    document.querySelectorAll('.notif-dot').forEach(d => d.classList.add('read'));
+    window.toast && window.toast('All notifications marked as read');
+  }
+</script>
