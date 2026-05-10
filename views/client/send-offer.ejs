@@ -1,0 +1,57 @@
+<%- include('../layouts/header', { title: 'Send Offer to ' + freelancer.name }) %>
+<div class="container-sm" style="padding-top:48px;padding-bottom:64px">
+  <a href="/profile/<%= freelancer.id %>" class="text-sm text-muted" style="display:inline-block;margin-bottom:20px">← Back to profile</a>
+
+  <div class="page-header">
+    <div class="flex items-center gap-16" style="margin-bottom:20px">
+      <img src="<%= freelancer.avatar_url || '/img/default-avatar.svg' %>" alt="<%= freelancer.name %>"
+        style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--line)">
+      <div>
+        <h1 style="font-size:24px">Send offer to <%= freelancer.name %></h1>
+        <p class="text-muted mt-4"><%= freelancer.headline || 'Freelancer' %></p>
+      </div>
+    </div>
+  </div>
+
+  <% if (errors && errors.length) { %>
+    <div class="alert alert-error" style="margin-bottom:20px"><%= errors[0].msg %></div>
+  <% } %>
+
+  <div class="card">
+    <form action="/offers" method="POST">
+      <input type="hidden" name="freelancer_id" value="<%= freelancer.id %>">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="form-group">
+          <label class="form-label">Project title <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="text" name="title" value="<%= body.title || '' %>"
+            placeholder="e.g. Brand identity for a new product launch" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Project description <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-textarea" name="description" rows="6"
+            placeholder="Describe the project scope, deliverables, and any specific requirements…" required><%= body.description || '' %></textarea>
+        </div>
+
+        <div class="grid-2" style="gap:16px">
+          <div class="form-group">
+            <label class="form-label">Budget ($) <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" name="budget" value="<%= body.budget || '' %>"
+              min="1" placeholder="2500" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deadline (optional)</label>
+            <input class="form-input" type="date" name="deadline" value="<%= body.deadline || '' %>"
+              min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+        </div>
+
+        <div class="flex gap-12">
+          <button type="submit" class="btn btn-primary">Send offer</button>
+          <a href="/profile/<%= freelancer.id %>" class="btn btn-ghost">Cancel</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../layouts/footer') %>

@@ -1,0 +1,39 @@
+<%- include('../layouts/header', { title: 'Sent Offers' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <div class="page-header">
+    <h1>Sent Offers</h1>
+    <p class="text-muted mt-8">Direct offers you have sent to freelancers.</p>
+  </div>
+
+  <% if (!offers.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">◎</div>
+      <h3>No offers sent</h3>
+      <p>Browse freelancer profiles and click "Send Offer" to invite them to a project.</p>
+    </div>
+  <% } else { %>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <% offers.forEach(o => { %>
+      <div class="card">
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:16px;margin-bottom:16px">
+          <div class="flex items-center gap-16">
+            <img src="<%= o.freelancer_avatar || '/img/default-avatar.svg' %>" alt="<%= o.freelancer_name %>"
+              style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--line)">
+            <div>
+              <a href="/profile/<%= o.freelancer_id %>" style="font-weight:600;font-size:16px"><%= o.freelancer_name %></a>
+              <div class="text-muted text-sm"><%= o.freelancer_headline || 'Freelancer' %></div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-serif);font-size:24px">$<%= Number(o.budget).toLocaleString() %></div>
+            <span class="badge badge-<%= o.status === 'pending' ? 'pending' : o.status === 'accepted' ? 'accepted' : 'rejected' %>" style="margin-top:4px"><%= o.status %></span>
+          </div>
+        </div>
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:6px"><%= o.title %></h3>
+        <span class="text-muted text-sm"><%= new Date(o.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %></span>
+      </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>

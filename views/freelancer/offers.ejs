@@ -1,0 +1,59 @@
+<%- include('../layouts/header', { title: 'My Offers' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <div class="page-header">
+    <h1>Direct Offers</h1>
+    <p class="text-muted mt-8">Clients who have sent you a private project offer.</p>
+  </div>
+
+  <% if (!offers.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">✦</div>
+      <h3>No offers yet</h3>
+      <p>Build your profile and complete projects to attract direct offers from clients.</p>
+    </div>
+  <% } else { %>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <% offers.forEach(o => { %>
+      <div class="card">
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:16px;margin-bottom:16px">
+          <div class="flex items-center gap-16">
+            <img src="<%= o.client_avatar || '/img/default-avatar.svg' %>" alt="<%= o.client_name %>"
+              style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--line)">
+            <div>
+              <div style="font-weight:600;font-size:16px"><%= o.client_name %></div>
+              <div class="text-muted text-sm"><%= o.client_headline || 'Client' %></div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-serif);font-size:24px">$<%= Number(o.budget).toLocaleString() %></div>
+            <% if (o.deadline) { %><div class="text-muted text-sm">Due: <%= new Date(o.deadline).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></div><% } %>
+            <span class="badge badge-<%= o.status === 'pending' ? 'pending' : o.status === 'accepted' ? 'accepted' : 'rejected' %>" style="margin-top:4px"><%= o.status %></span>
+          </div>
+        </div>
+
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:8px"><%= o.title %></h3>
+        <div style="background:var(--paper);border-radius:var(--radius);padding:14px;font-size:14px;line-height:1.7;color:var(--ink-2);margin-bottom:16px;word-break:break-word">
+          <%= o.description %>
+        </div>
+
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px">
+          <span class="text-muted text-sm"><%= new Date(o.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %></span>
+          <% if (o.status === 'pending') { %>
+          <div class="flex gap-12">
+            <form action="/freelancer/offers/<%= o.id %>/respond" method="POST">
+              <button type="submit" name="action" value="accept" class="btn btn-success btn-sm"
+                data-confirm="Accept this offer? A contract will be created automatically.">✓ Accept offer</button>
+            </form>
+            <form action="/freelancer/offers/<%= o.id %>/respond" method="POST">
+              <button type="submit" name="action" value="decline" class="btn btn-ghost btn-sm" style="color:var(--danger)"
+                data-confirm="Decline this offer?">✕ Decline</button>
+            </form>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
