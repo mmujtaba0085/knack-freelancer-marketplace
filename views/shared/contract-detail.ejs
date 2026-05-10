@@ -1,0 +1,342 @@
+<%- include('../layouts/header', { title: 'Contract · ' + contract.job_title }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <a href="<%= isClient ? '/client/contracts' : '/freelancer/contracts' %>" class="text-sm text-muted" style="display:inline-block;margin-bottom:20px">← Contracts</a>
+
+  <div class="grid-2" style="gap:32px;align-items:start">
+
+    <!-- Left column -->
+    <div>
+      <!-- Header -->
+      <div class="page-header">
+        <div class="flex items-center gap-12 mb-8" style="flex-wrap:wrap">
+          <span class="badge badge-<%= contract.status %>"><%= contract.status.replace('_',' ') %></span>
+          <a href="/contracts/<%= contract.id %>/chat" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px">
+            💬 Chat <% if (msgCount > 0) { %><span style="background:var(--brand);color:#fff;border-radius:999px;padding:0 6px;font-size:11px;font-weight:700"><%= msgCount %></span><% } %>
+          </a>
+        </div>
+        <h1 style="font-size:26px"><%= contract.job_title %></h1>
+        <div class="flex gap-24 mt-16" style="flex-wrap:wrap">
+          <div>
+            <div class="text-xs text-muted">Value</div>
+            <div style="font-family:var(--font-serif);font-size:24px">$<%= Number(contract.agreed_budget).toLocaleString() %></div>
+          </div>
+          <div>
+            <div class="text-xs text-muted"><%= isClient ? 'Freelancer' : 'Client' %></div>
+            <div style="font-weight:500;margin-top:4px"><%= isClient ? contract.freelancer_name : contract.client_name %></div>
+          </div>
+          <div>
+            <div class="text-xs text-muted">Started</div>
+            <div style="font-size:14px;margin-top:4px"><%= new Date(contract.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %></div>
+          </div>
+          <% if (contract.deadline) { %>
+          <div>
+            <div class="text-xs text-muted">Deadline</div>
+            <div style="font-size:14px;margin-top:4px"><%= new Date(contract.deadline).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %></div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="flex justify-between items-center" style="margin-bottom:16px">
+          <h3 style="font-size:15px;font-weight:600">Milestones</h3>
+          <% if (milestones.length > 0) { %>
+            <span style="font-size:13px;color:var(--ink-3)">
+              <%= milestones.filter(m=>m.status==='approved').length %>/<%= milestones.length %> complete
+            </span>
+          <% } %>
+        </div>
+
+        <!-- Overall progress bar -->
+        <% if (milestones.length > 0) { %>
+          <div class="progress-track" style="height:8px;margin-bottom:20px">
+            <div class="progress-fill" style="width:<%= contract.milestone_pct %>%"></div>
+          </div>
+        <% } else if (!milestones.length && contract.status === 'active') { %>
+          <p class="text-muted text-sm" style="margin-bottom:16px">
+            <% if (!isClient) { %>No milestones yet. Add checkpoints to track your progress and get client sign-off at each stage.
+            <% } else { %>No milestones added yet. The freelancer will add project checkpoints here.<% } %>
+          </p>
+        <% } %>
+
+        <!-- Milestone list -->
+        <% if (milestones.length) { %>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:<%= !isClient && contract.status === 'active' ? '20px' : '0' %>">
+          <% milestones.forEach(ms => { %>
+          <div style="border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--paper)">
+            <div class="flex justify-between items-start" style="gap:12px">
+              <div style="flex:1">
+                <div class="flex items-center gap-8 mb-4">
+                  <span style="font-weight:600;font-size:14px"><%= ms.title %></span>
+                  <span class="badge badge-<%= ms.status === 'approved' ? 'accepted' : ms.status === 'submitted' ? 'pending' : ms.status === 'revision_requested' ? 'rejected' : 'open' %>" style="font-size:11px">
+                    <%= ms.status.replace('_',' ') %>
+                  </span>
+                </div>
+                <% if (ms.description) { %><p class="text-muted text-sm" style="margin-bottom:6px"><%= ms.description %></p><% } %>
+                <div class="flex gap-16" style="flex-wrap:wrap">
+                  <% if (ms.due_date) { %><span class="text-muted text-sm">📅 <%= new Date(ms.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) %></span><% } %>
+                  <% if (ms.amount > 0) { %><span class="text-muted text-sm">💰 $<%= Number(ms.amount).toLocaleString() %></span><% } %>
+                </div>
+                <% if (ms.revision_note && ms.status === 'revision_requested') { %>
+                  <div style="margin-top:8px;padding:8px 12px;background:#fff8f0;border-left:3px solid var(--brand);border-radius:4px;font-size:13px;color:var(--ink-2)">
+                    <strong>Revision note:</strong> <%= ms.revision_note %>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Freelancer actions -->
+            <% if (!isClient && contract.status === 'active') { %>
+              <div class="flex gap-8 mt-10" style="flex-wrap:wrap">
+                <% if (ms.status === 'pending' || ms.status === 'revision_requested') { %>
+                <form action="/contracts/<%= contract.id %>/milestones/<%= ms.id %>/submit" method="POST">
+                  <button type="submit" class="btn btn-success btn-sm" data-confirm="Mark &quot;<%= ms.title %>&quot; as done?">✓ Mark done</button>
+                </form>
+                <% } %>
+                <% if (ms.status === 'pending') { %>
+                <form action="/contracts/<%= contract.id %>/milestones/<%= ms.id %>/delete" method="POST">
+                  <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">Delete</button>
+                </form>
+                <% } %>
+              </div>
+            <% } %>
+
+            <!-- Client actions -->
+            <% if (isClient && ms.status === 'submitted') { %>
+            <form action="/contracts/<%= contract.id %>/milestones/<%= ms.id %>/review" method="POST" style="margin-top:10px">
+              <div class="flex gap-8 items-center" style="flex-wrap:wrap">
+                <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">✓ Approve</button>
+                <div style="display:flex;gap:8px;align-items:center;flex:1;min-width:200px">
+                  <input class="form-input" type="text" name="revision_note" placeholder="Revision note (optional)" style="flex:1;height:36px;font-size:13px">
+                  <button type="submit" name="action" value="revision" class="btn btn-ghost btn-sm" style="color:var(--brand);white-space:nowrap">↺ Request revision</button>
+                </div>
+              </div>
+            </form>
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+        <% } %>
+
+        <!-- Freelancer: add milestone form -->
+        <% if (!isClient && contract.status === 'active') { %>
+        <details style="margin-top:4px">
+          <summary class="btn btn-outline btn-sm" style="cursor:pointer;display:inline-flex;list-style:none;gap:6px">+ Add milestone</summary>
+          <form action="/contracts/<%= contract.id %>/milestones" method="POST" style="margin-top:14px">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <input class="form-input" type="text" name="title" placeholder="Milestone title *" required>
+              <textarea class="form-textarea" name="description" rows="2" placeholder="Brief description (optional)" style="min-height:60px"></textarea>
+              <div class="grid-2" style="gap:12px">
+                <input class="form-input" type="date" name="due_date" placeholder="Due date">
+                <input class="form-input" type="number" name="amount" min="0" step="0.01" placeholder="Payment amount ($)">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="align-self:flex-start">Add milestone</button>
+            </div>
+          </form>
+        </details>
+        <% } %>
+      </div>
+
+      <!-- Deliverables -->
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">Deliverables</h3>
+        <% if (!deliverables.length) { %>
+          <p class="text-muted text-sm">No deliverables submitted yet.</p>
+        <% } else { %>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+            <% deliverables.forEach(d => { %>
+            <div style="background:var(--paper);border-radius:var(--radius);padding:14px;border:1px solid var(--line)">
+              <div class="flex justify-between items-start" style="gap:12px">
+                <div style="flex:1">
+                  <% if (d.message) { %><p style="font-size:14px;margin-bottom:8px;word-break:break-word"><%= d.message %></p><% } %>
+                  <% if (d.file_url) { %>
+                    <a href="<%= d.file_url %>" target="_blank" class="btn btn-outline btn-sm" style="font-size:12px">↓ Download file</a>
+                  <% } %>
+                  <div class="text-muted text-sm" style="margin-top:8px"><%= new Date(d.submitted_at).toLocaleDateString() %></div>
+                </div>
+                <span class="badge badge-<%= d.status === 'approved' ? 'accepted' : d.status === 'revision' ? 'rejected' : 'pending' %>"><%= d.status %></span>
+              </div>
+              <% if (isClient && d.status === 'pending') { %>
+              <form action="/contracts/<%= contract.id %>/deliverable/review" method="POST" style="display:flex;gap:8px;margin-top:12px">
+                <input type="hidden" name="deliverable_id" value="<%= d.id %>">
+                <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">✓ Approve</button>
+                <button type="submit" name="action" value="revision" class="btn btn-ghost btn-sm" style="color:var(--brand)">↺ Request revision</button>
+              </form>
+              <% } %>
+            </div>
+            <% }) %>
+          </div>
+        <% } %>
+        <% if (!isClient && contract.status === 'active') { %>
+        <%
+          const lastDel = deliverables[0];
+          const needsRevision = lastDel && lastDel.status === 'revision';
+        %>
+        <% if (needsRevision) { %>
+          <div style="padding:10px 14px;background:#fff8f0;border-left:3px solid var(--brand);border-radius:4px;font-size:13px;color:var(--ink-2);margin-bottom:14px">
+            The client requested revision on your last submission. Please re-submit below.
+          </div>
+        <% } %>
+        <form action="/contracts/<%= contract.id %>/deliverable" method="POST" enctype="multipart/form-data">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em">
+            <%= needsRevision ? 'Re-submit deliverable' : 'Submit deliverable' %>
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <textarea class="form-textarea" name="message" rows="3" placeholder="Describe what you're submitting…" style="min-height:80px"></textarea>
+            <input class="form-input" type="file" name="file" accept=".pdf,.zip,.jpg,.jpeg,.png,.doc,.docx">
+            <button type="submit" class="btn btn-primary btn-sm"><%= needsRevision ? 'Re-submit deliverable' : 'Submit deliverable' %></button>
+          </div>
+        </form>
+        <% } %>
+      </div>
+
+      <!-- Leave review -->
+      <% if (contract.status === 'completed') { %>
+        <% const alreadyReviewed = reviews.some(r => r.reviewer_id === (sessionUser ? sessionUser.id : -1)); %>
+        <% if (!alreadyReviewed) { %>
+        <div class="card" style="margin-bottom:24px">
+          <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">Leave a review</h3>
+          <form action="/contracts/<%= contract.id %>/review" method="POST">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div class="form-label" style="margin-bottom:8px">Rating</div>
+                <div id="star-picker" style="display:flex;gap:4px;cursor:pointer">
+                  <% for(let i=1;i<=5;i++) { %>
+                    <span class="star star-pick" data-val="<%= i %>" style="font-size:28px;cursor:pointer">★</span>
+                  <% } %>
+                </div>
+                <input type="hidden" name="rating" id="rating-input" value="5">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Comment</label>
+                <textarea class="form-textarea" name="comment" rows="3" placeholder="Share your experience…" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Submit review</button>
+            </div>
+          </form>
+        </div>
+        <% } %>
+        <!-- Re-hire button for client on completed contract -->
+        <% if (isClient) { %>
+        <div class="card card-sunken" style="margin-bottom:24px;text-align:center;padding:20px">
+          <p class="text-muted text-sm" style="margin-bottom:12px">Enjoyed working with <%= contract.freelancer_name %>?</p>
+          <form action="/contracts/<%= contract.id %>/rehire" method="POST" style="display:inline">
+            <button type="submit" class="btn btn-primary btn-sm">Re-hire <%= contract.freelancer_name %> →</button>
+          </form>
+        </div>
+        <% } %>
+      <% } %>
+    </div>
+
+    <!-- Right sidebar -->
+    <div style="position:sticky;top:88px">
+
+      <!-- Change orders -->
+      <% if (contract.status === 'active') { %>
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">Change Orders</h3>
+
+        <% if (changeOrders.length) { %>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+          <% changeOrders.forEach(co => { %>
+          <div style="border:1px solid var(--line);border-radius:var(--radius);padding:12px;font-size:13px">
+            <div class="flex justify-between items-start mb-6">
+              <span style="font-weight:500">By <%= co.requester_name %></span>
+              <span class="badge badge-<%= co.status === 'accepted' ? 'accepted' : co.status === 'rejected' ? 'rejected' : 'pending' %>" style="font-size:11px"><%= co.status %></span>
+            </div>
+            <p style="color:var(--ink-2);margin-bottom:6px;word-break:break-word"><%= co.reason %></p>
+            <div class="flex gap-12" style="flex-wrap:wrap">
+              <% if (co.additional_amount > 0) { %><span class="text-muted">+$<%= Number(co.additional_amount).toLocaleString() %></span><% } %>
+              <% if (co.extra_days > 0) { %><span class="text-muted">+<%= co.extra_days %> day<%= co.extra_days !== 1 ? 's' : '' %></span><% } %>
+            </div>
+            <% if (co.client_note) { %><p class="text-muted" style="margin-top:6px;font-size:12px">Note: <%= co.client_note %></p><% } %>
+
+            <% if (isClient && co.status === 'pending') { %>
+            <form action="/contracts/<%= contract.id %>/change-orders/<%= co.id %>/review" method="POST" style="margin-top:10px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <input class="form-input" type="text" name="client_note" placeholder="Optional note to freelancer" style="font-size:12px;height:34px">
+                <div class="flex gap-8">
+                  <button type="submit" name="action" value="accept" class="btn btn-success btn-sm">✓ Accept</button>
+                  <button type="submit" name="action" value="reject" class="btn btn-ghost btn-sm" style="color:var(--danger)">✕ Reject</button>
+                </div>
+              </div>
+            </form>
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+        <% } else { %>
+          <p class="text-muted text-sm" style="margin-bottom:12px">No change requests yet.</p>
+        <% } %>
+
+        <% if (!isClient) { %>
+        <details>
+          <summary class="btn btn-outline btn-sm" style="cursor:pointer;display:inline-flex;list-style:none;gap:6px">+ Request change</summary>
+          <form action="/contracts/<%= contract.id %>/change-orders" method="POST" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+            <textarea class="form-textarea" name="reason" rows="3" placeholder="Explain why you need this change…" required style="min-height:70px"></textarea>
+            <div class="grid-2" style="gap:10px">
+              <div>
+                <label class="form-label" style="font-size:12px">Extra budget ($)</label>
+                <input class="form-input" type="number" name="additional_amount" min="0" step="0.01" placeholder="0" style="height:36px">
+              </div>
+              <div>
+                <label class="form-label" style="font-size:12px">Extra days</label>
+                <input class="form-input" type="number" name="extra_days" min="0" placeholder="0" style="height:36px">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Submit request</button>
+          </form>
+        </details>
+        <% } %>
+      </div>
+      <% } %>
+
+      <!-- Reviews -->
+      <% if (reviews.length) { %>
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">Reviews</h3>
+        <% reviews.forEach(r => { %>
+        <div style="padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px">
+          <div class="flex items-center gap-8 mb-8">
+            <div class="stars">
+              <% for(let i=1;i<=5;i++){%><span class="star <%=i<=r.rating?'filled':''%>">★</span><%}%>
+            </div>
+            <span class="text-sm text-muted">by <%= r.reviewer_name %></span>
+          </div>
+          <p style="font-size:14px;color:var(--ink-2);line-height:1.6"><%= r.comment %></p>
+        </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <!-- Raise dispute -->
+      <% if (contract.status === 'active') { %>
+      <div class="card" style="border-color:var(--danger)">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:8px;color:var(--danger)">Having an issue?</h3>
+        <p class="text-muted text-sm" style="margin-bottom:14px">Raise a dispute and our team will review within 48 hours.</p>
+        <form action="/contracts/<%= contract.id %>/dispute" method="POST">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <select class="form-select" name="category" style="height:40px;font-size:13px">
+              <option value="non_delivery">Non-delivery</option>
+              <option value="quality">Quality issue</option>
+              <option value="payment">Payment dispute</option>
+              <option value="scope">Scope disagreement</option>
+              <option value="other">Other</option>
+            </select>
+            <textarea class="form-textarea" name="reason" rows="3" placeholder="Describe the issue…" required style="min-height:80px"></textarea>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <input type="checkbox" name="allow_admin_chat" value="1" style="accent-color:var(--brand)">
+              Allow admin to view our chat history
+            </label>
+            <button type="submit" class="btn btn-danger btn-sm btn-full"
+              data-confirm="Raise a dispute on this contract?">Raise dispute</button>
+          </div>
+        </form>
+      </div>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+<%- include('../layouts/footer') %>
