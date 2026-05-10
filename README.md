@@ -6,6 +6,15 @@ A full-stack web application connecting clients and freelancers — built for th
 
 ---
 
+## Team
+
+| Name | Roll Number |
+|------|-------------|
+| Muhammad Mujtaba | 22i-2123 |
+| Shahmeer | 23i-2063 |
+
+---
+
 ## Features
 
 ### Core
