@@ -1,0 +1,65 @@
+<%- include('../layouts/header', { title: 'My Jobs' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <div class="flex items-center justify-between" style="margin-bottom:32px;flex-wrap:wrap;gap:16px">
+    <h1 style="font-family:var(--font-serif);font-size:32px">My Jobs</h1>
+    <a href="/client/post-job" class="btn btn-primary">+ Post a job</a>
+  </div>
+
+  <% if (!jobs.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">◇</div>
+      <h3>No jobs yet</h3>
+      <p>Post your first job and start receiving proposals within hours.</p>
+      <a href="/client/post-job" class="btn btn-primary">Post a job</a>
+    </div>
+  <% } else { %>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Job title</th>
+              <th>Category</th>
+              <th>Budget</th>
+              <th>Proposals</th>
+              <th>Status</th>
+              <th>Posted</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% jobs.forEach(j => { %>
+            <tr>
+              <td>
+                <a href="/client/proposals/<%= j.id %>" style="font-weight:500;color:var(--ink)">
+                  <%= j.title.substring(0,60) %><%= j.title.length>60?'…':'' %>
+                </a>
+                <% if (j.new_proposals > 0) { %>
+                  <span class="badge badge-pending" style="margin-left:8px"><%= j.new_proposals %> new</span>
+                <% } %>
+              </td>
+              <td class="text-muted text-sm"><%= j.category_name || '—' %></td>
+              <td style="white-space:nowrap">$<%= Number(j.budget_min).toLocaleString() %>–$<%= Number(j.budget_max).toLocaleString() %></td>
+              <td><%= j.proposal_count %></td>
+              <td><span class="badge badge-<%= j.status.replace('_','-') %>"><%= j.status %></span></td>
+              <td class="text-muted text-sm"><%= new Date(j.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) %></td>
+              <td>
+                <div class="flex gap-8">
+                  <a href="/client/jobs/<%= j.id %>/edit" class="btn btn-ghost btn-sm">Edit</a>
+                  <% if (j.status !== 'cancelled' && j.status !== 'completed') { %>
+                  <form action="/client/jobs/<%= j.id %>/delete" method="POST" style="display:inline">
+                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)"
+                      data-confirm="Cancel this job? This cannot be undone.">Cancel</button>
+                  </form>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>

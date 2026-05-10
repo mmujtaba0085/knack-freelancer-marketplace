@@ -1,0 +1,111 @@
+<%- include('../layouts/header', { title: 'Post a Job' }) %>
+<div class="container-sm" style="padding-top:48px;padding-bottom:64px">
+  <div class="page-header">
+    <a href="/client/jobs" class="text-sm text-muted" style="display:inline-block;margin-bottom:8px">← My jobs</a>
+    <h1>Post a new job</h1>
+    <p class="text-muted mt-8">Be specific — detailed briefs attract better proposals.</p>
+  </div>
+
+  <% if (errors && errors.length) { %>
+    <div class="alert alert-error">
+      <div>
+        <strong>Please fix the following:</strong>
+        <ul style="margin-top:8px;padding-left:20px">
+          <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+        </ul>
+      </div>
+    </div>
+  <% } %>
+
+  <form action="/client/post-job" method="POST" novalidate>
+    <div style="display:flex;flex-direction:column;gap:24px">
+
+      <!-- Title -->
+      <div class="form-group">
+        <label class="form-label" for="title">Job title <span style="color:var(--brand)">*</span></label>
+        <input class="form-input <%= errors && errors.find(e=>e.path==='title')?'error':'' %>"
+          type="text" id="title" name="title" value="<%= body.title||'' %>"
+          placeholder="e.g. Brand identity for a coffee startup" required>
+        <span class="form-hint">10–200 characters. Be specific about what you need.</span>
+        <% if (errors && errors.find(e=>e.path==='title')) { %>
+          <span class="form-error">⚠ <%= errors.find(e=>e.path==='title').msg %></span>
+        <% } %>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="form-label" for="category_id">Category</label>
+        <select class="form-select" id="category_id" name="category_id">
+          <option value="">Select a category</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.id %>" <%= body.category_id == c.id ? 'selected' : '' %>><%= c.icon %> <%= c.name %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label" for="description">Project description <span style="color:var(--brand)">*</span></label>
+        <textarea class="form-textarea <%= errors && errors.find(e=>e.path==='description')?'error':'' %>"
+          id="description" name="description" rows="7"
+          placeholder="Describe the project, deliverables, timeline, and any requirements…" required><%= body.description||'' %></textarea>
+        <span class="form-hint">Minimum 50 characters.</span>
+        <% if (errors && errors.find(e=>e.path==='description')) { %>
+          <span class="form-error">⚠ <%= errors.find(e=>e.path==='description').msg %></span>
+        <% } %>
+      </div>
+
+      <!-- Budget -->
+      <div class="grid-2" style="gap:16px">
+        <div class="form-group">
+          <label class="form-label" for="budget_min">Min budget ($) <span style="color:var(--brand)">*</span></label>
+          <input class="form-input" type="number" id="budget_min" name="budget_min"
+            value="<%= body.budget_min||'' %>" placeholder="500" min="1" required>
+          <% if (errors && errors.find(e=>e.path==='budget_min')) { %>
+            <span class="form-error">⚠ <%= errors.find(e=>e.path==='budget_min').msg %></span>
+          <% } %>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="budget_max">Max budget ($) <span style="color:var(--brand)">*</span></label>
+          <input class="form-input" type="number" id="budget_max" name="budget_max"
+            value="<%= body.budget_max||'' %>" placeholder="2000" min="1" required>
+          <span class="form-error" id="budget-error" style="display:none">⚠ Max must be ≥ min</span>
+          <% if (errors && errors.find(e=>e.path==='budget_max')) { %>
+            <span class="form-error">⚠ <%= errors.find(e=>e.path==='budget_max').msg %></span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Level + Deadline -->
+      <div class="grid-2" style="gap:16px">
+        <div class="form-group">
+          <label class="form-label" for="level">Experience level <span style="color:var(--brand)">*</span></label>
+          <select class="form-select" id="level" name="level" required>
+            <option value="entry"        <%= body.level==='entry'        ?'selected':'' %>>Entry</option>
+            <option value="intermediate" <%= !body.level||body.level==='intermediate'?'selected':'' %>>Intermediate</option>
+            <option value="expert"       <%= body.level==='expert'       ?'selected':'' %>>Expert</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="deadline">Deadline (optional)</label>
+          <input class="form-input" type="date" id="deadline" name="deadline" value="<%= body.deadline||'' %>">
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="form-group">
+        <label class="form-label" for="skills_text">Required skills (comma-separated)</label>
+        <input class="form-input" type="text" id="skills_text" name="skills_text"
+          value="<%= body.skills_text||'' %>" placeholder="e.g. Figma, Brand Identity, Typography">
+        <span class="form-hint">Used to match the best freelancers to your job.</span>
+      </div>
+
+      <div class="flex gap-12" style="margin-top:8px">
+        <button type="submit" class="btn btn-primary">Publish job</button>
+        <a href="/client/jobs" class="btn btn-ghost">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+<%- include('../layouts/footer') %>
+<script src="/js/validate.js"></script>
