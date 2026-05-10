@@ -1,0 +1,118 @@
+<%- include('../layouts/header', { title: 'Freelancer Dashboard' }) %>
+<div class="container">
+  <div class="dash-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:16px">
+      <div>
+        <p class="text-muted text-sm" style="margin-bottom:4px">Your workspace,</p>
+        <h1><%= user.userName %>.</h1>
+      </div>
+      <a href="/freelancer/browse" class="btn btn-primary">Browse jobs →</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="value">$<%= Number(stats.total_earned).toLocaleString() %></div>
+      <div class="label">Total earned</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.active_contracts %></div>
+      <div class="label">Active contracts</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.completed_contracts %></div>
+      <div class="label">Completed jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= Number(stats.avg_rating).toFixed(1) %></div>
+      <div class="label">Avg. rating</div>
+      <div class="stars" style="margin-top:8px">
+        <% for(let i=1;i<=5;i++){%><span class="star <%= i<=Math.round(stats.avg_rating)?'filled':''%>">★</span><%}%>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts + job matches -->
+  <div class="grid-2" style="gap:24px;margin-bottom:32px;align-items:start">
+    <div class="chart-card">
+      <h3>Earnings (last 6 months)</h3>
+      <canvas id="earningsChart" height="180"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="flex justify-between items-center" style="margin-bottom:16px">
+        <h3 style="margin-bottom:0">Best-match jobs</h3>
+        <a href="/freelancer/browse" class="text-sm" style="color:var(--brand)">Browse all →</a>
+      </div>
+      <% if (matchedJobs.length) { %>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <% matchedJobs.forEach(j => { %>
+          <a href="/jobs/<%= j.id %>" style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:var(--radius);transition:all .2s" onmouseover="this.style.borderColor='var(--ink-3)'" onmouseout="this.style.borderColor='var(--line)'">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= j.title %></div>
+              <div class="text-muted text-sm mt-8">$<%= Number(j.budget_min).toLocaleString() %>–$<%= Number(j.budget_max).toLocaleString() %></div>
+            </div>
+            <span class="match-score <%= j.match_score>=80?'high':'med' %>" style="margin-left:12px;flex-shrink:0"><%= j.match_score %>%</span>
+          </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state" style="padding:32px 16px">
+          <p>No matches yet. <a href="/profile" style="color:var(--brand)">Add your skills</a> to get matched.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Active contracts -->
+  <% if (activeContracts.length) { %>
+  <div class="card" style="margin-bottom:40px">
+    <div class="flex justify-between items-center" style="margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:600">Active contracts</h3>
+      <a href="/freelancer/contracts" class="text-sm" style="color:var(--brand)">View all →</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <% activeContracts.forEach(ct => { %>
+      <a href="/contracts/<%= ct.id %>" style="display:block;padding:16px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--line)">
+        <div class="flex justify-between items-center" style="margin-bottom:10px">
+          <span style="font-weight:500;font-size:14px"><%= ct.job_title %></span>
+          <span class="text-muted text-sm">Client: <%= ct.client_name %></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="progress-track" style="flex:1">
+            <div class="progress-fill" style="width:<%= ct.milestone_pct %>%"></div>
+          </div>
+          <span class="text-sm text-muted"><%= ct.milestone_pct %>%</span>
+          <span style="font-family:var(--font-serif);font-size:16px">$<%= Number(ct.agreed_budget).toLocaleString() %></span>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const earningsData = <%- JSON.stringify(earningsChart) %>;
+  new Chart(document.getElementById('earningsChart'), {
+    type: 'bar',
+    data: {
+      labels: earningsData.map(d => d.month),
+      datasets: [{
+        data: earningsData.map(d => d.earned),
+        backgroundColor: '#FF6B2C',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: '#E6DFD3' }, ticks: { callback: v => '$'+v } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>

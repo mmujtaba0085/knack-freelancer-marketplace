@@ -1,0 +1,57 @@
+<%- include('../layouts/header', { title: 'Disputes' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+  <h1 style="font-family:var(--font-serif);font-size:32px;margin-bottom:32px">Dispute Management</h1>
+
+  <% if (!disputes.length) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">✓</div>
+      <h3>No disputes</h3>
+      <p>The platform is dispute-free right now.</p>
+    </div>
+  <% } else { %>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <% disputes.forEach(d => { %>
+      <div class="card">
+        <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div>
+            <div style="font-weight:600;font-size:16px"><%= d.job_title %></div>
+            <div class="text-muted text-sm mt-8">
+              Client: <%= d.client_name %> · Freelancer: <%= d.freelancer_name %> · Value: $<%= Number(d.agreed_budget).toLocaleString() %>
+            </div>
+          </div>
+          <span class="badge badge-<%= d.status==='open'?'rejected':d.status==='resolved'?'accepted':'pending' %>"><%= d.status %></span>
+        </div>
+
+        <div style="background:var(--paper);border-radius:var(--radius);padding:14px;margin-bottom:16px">
+          <div class="text-xs text-muted" style="margin-bottom:6px">Raised by <%= d.raised_by_name %> on <%= new Date(d.created_at).toLocaleDateString() %></div>
+          <p style="font-size:14px;color:var(--ink-2)"><%= d.reason %></p>
+        </div>
+
+        <% if (d.admin_note) { %>
+          <div style="background:#E8F5EE;border-radius:var(--radius);padding:12px;margin-bottom:16px;font-size:14px;color:var(--success)">
+            <strong>Admin note:</strong> <%= d.admin_note %>
+          </div>
+        <% } %>
+
+        <% if (d.status === 'open' || d.status === 'investigating') { %>
+        <form action="/admin/disputes/<%= d.id %>/resolve" method="POST">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <textarea class="form-textarea" name="admin_note" rows="2"
+              placeholder="Resolution note (visible to both parties)…" style="min-height:70px"></textarea>
+            <div class="flex gap-10">
+              <select class="form-select" name="status" style="flex:1">
+                <option value="investigating">Mark investigating</option>
+                <option value="resolved">Mark resolved</option>
+                <option value="closed">Close</option>
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm">Update dispute</button>
+            </div>
+          </div>
+        </form>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('../layouts/footer') %>

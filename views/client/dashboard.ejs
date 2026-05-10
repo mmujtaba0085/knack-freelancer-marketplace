@@ -1,0 +1,129 @@
+<%- include('../layouts/header', { title: 'Client Dashboard' }) %>
+<div class="container">
+
+  <!-- Page header -->
+  <div class="dash-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:16px">
+      <div>
+        <p class="text-muted text-sm" style="margin-bottom:4px">Good to see you,</p>
+        <h1><%= user.userName %>.</h1>
+      </div>
+      <a href="/client/post-job" class="btn btn-primary">+ Post a job</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="value"><%= stats.open_jobs %></div>
+      <div class="label">Open jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.active_contracts %></div>
+      <div class="label">Active contracts</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.new_proposals %></div>
+      <div class="label">New proposals</div>
+      <% if (stats.new_proposals > 0) { %>
+        <div class="delta">↑ Needs review</div>
+      <% } %>
+    </div>
+    <div class="stat-card">
+      <div class="value">$<%= Number(stats.total_spent).toLocaleString() %></div>
+      <div class="label">Total spent</div>
+    </div>
+  </div>
+
+  <!-- Charts + Recent jobs -->
+  <div class="grid-2" style="gap:24px;margin-bottom:32px;align-items:start">
+    <!-- Spend chart -->
+    <div class="chart-card">
+      <h3>Monthly spend</h3>
+      <canvas id="spendChart" height="180"></canvas>
+    </div>
+
+    <!-- Recent jobs -->
+    <div class="chart-card">
+      <div class="flex justify-between items-center" style="margin-bottom:16px">
+        <h3 style="margin-bottom:0">Recent jobs</h3>
+        <a href="/client/jobs" class="text-sm" style="color:var(--brand)">View all →</a>
+      </div>
+      <% if (recentJobs.length) { %>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <% recentJobs.forEach(j => { %>
+          <a href="/client/proposals/<%= j.id %>" style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:var(--radius);transition:all .2s" onmouseover="this.style.borderColor='var(--ink-3)'" onmouseout="this.style.borderColor='var(--line)'">
+            <div>
+              <div style="font-size:14px;font-weight:500"><%= j.title.substring(0,50) %><%= j.title.length>50?'…':'' %></div>
+              <div class="text-muted text-sm mt-8"><%= j.new_proposals %> new proposal<%= j.new_proposals!==1?'s':'' %></div>
+            </div>
+            <span class="badge badge-<%= j.status.replace('_','-') %>"><%= j.status %></span>
+          </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state" style="padding:32px 16px">
+          <div class="empty-state-icon">◇</div>
+          <p>No jobs yet. <a href="/client/post-job" style="color:var(--brand)">Post your first job</a></p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Active contracts -->
+  <% if (activeContracts.length) { %>
+  <div class="card" style="margin-bottom:40px">
+    <div class="flex justify-between items-center" style="margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:600">Active contracts</h3>
+      <a href="/client/contracts" class="text-sm" style="color:var(--brand)">View all →</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <% activeContracts.forEach(ct => { %>
+      <a href="/contracts/<%= ct.id %>" style="display:block;padding:16px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--line)">
+        <div class="flex justify-between items-center" style="margin-bottom:10px">
+          <span style="font-weight:500;font-size:14px"><%= ct.job_title %></span>
+          <span class="text-muted text-sm">with <%= ct.freelancer_name %></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="progress-track" style="flex:1">
+            <div class="progress-fill <%= ct.milestone_pct >= 100 ? 'complete' : '' %>" style="width:<%= ct.milestone_pct %>%"></div>
+          </div>
+          <span class="text-sm text-muted"><%= ct.milestone_pct %>%</span>
+          <span style="font-family:var(--font-serif);font-size:16px">$<%= Number(ct.agreed_budget).toLocaleString() %></span>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
+</div>
+<%- include('../layouts/footer') %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const spendData = <%- JSON.stringify(spendChart) %>;
+  new Chart(document.getElementById('spendChart'), {
+    type: 'line',
+    data: {
+      labels: spendData.map(d => d.month),
+      datasets: [{
+        data: spendData.map(d => d.spend),
+        borderColor: '#FF6B2C',
+        backgroundColor: 'rgba(255,107,44,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#FF6B2C',
+        pointRadius: 4,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: '#E6DFD3' }, ticks: { callback: v => '$'+v } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>

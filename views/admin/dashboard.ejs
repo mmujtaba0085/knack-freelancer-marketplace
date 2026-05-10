@@ -1,0 +1,140 @@
+<%- include('../layouts/header', { title: 'Admin Dashboard' }) %>
+<div class="container" style="padding-top:40px;padding-bottom:64px">
+
+  <div class="dash-header">
+    <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:16px">
+      <div>
+        <p class="text-muted text-sm" style="margin-bottom:4px">Platform overview,</p>
+        <h1>Admin Dashboard</h1>
+      </div>
+      <div class="flex gap-12">
+        <a href="/admin/users"    class="btn btn-outline btn-sm">Manage users</a>
+        <a href="/admin/reports"  class="btn btn-primary btn-sm">View reports</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Platform stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="value"><%= stats.total_users.toLocaleString() %></div>
+      <div class="label">Total users</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.open_jobs %></div>
+      <div class="label">Open jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="value"><%= stats.active_contracts %></div>
+      <div class="label">Active contracts</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">$<%= Number(stats.total_gmv).toLocaleString() %></div>
+      <div class="label">Total GMV</div>
+    </div>
+  </div>
+
+  <% if (stats.open_disputes > 0) { %>
+  <div class="alert alert-error" style="margin-bottom:24px">
+    ⚠ <strong><%= stats.open_disputes %> open dispute<%= stats.open_disputes!==1?'s':'' %></strong> require attention.
+    <a href="/admin/disputes" style="color:var(--danger);font-weight:600;margin-left:8px">Review now →</a>
+  </div>
+  <% } %>
+
+  <div class="grid-2" style="gap:24px;margin-bottom:32px;align-items:start">
+    <!-- User registration chart -->
+    <div class="chart-card">
+      <h3>New user registrations (last 6 months)</h3>
+      <canvas id="userChart" height="180"></canvas>
+    </div>
+
+    <!-- Open disputes -->
+    <div class="chart-card">
+      <div class="flex justify-between items-center" style="margin-bottom:16px">
+        <h3 style="margin-bottom:0">Open disputes</h3>
+        <a href="/admin/disputes" class="text-sm" style="color:var(--brand)">All disputes →</a>
+      </div>
+      <% if (!disputes.length) { %>
+        <div class="empty-state" style="padding:24px 0">
+          <div style="font-size:28px;margin-bottom:8px;opacity:.4">✓</div>
+          <p class="text-muted text-sm">No open disputes</p>
+        </div>
+      <% } else { %>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <% disputes.forEach(d => { %>
+          <div style="padding:12px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--line)">
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px"><%= d.job_title.substring(0,50) %></div>
+            <div class="text-muted text-sm">By: <%= d.raised_by_name %> · $<%= Number(d.agreed_budget).toLocaleString() %></div>
+            <div style="margin-top:10px">
+              <a href="/admin/disputes" class="btn btn-outline btn-sm">Resolve</a>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Recent users -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="flex items-center justify-between" style="padding:20px 24px;border-bottom:1px solid var(--line)">
+      <h3 style="font-size:15px;font-weight:600">Recent users</h3>
+      <a href="/admin/users" class="text-sm" style="color:var(--brand)">View all →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% recentUsers.forEach(u => { %>
+          <tr>
+            <td style="font-weight:500"><%= u.name %></td>
+            <td class="text-muted text-sm"><%= u.email %></td>
+            <td><span class="badge badge-open" style="text-transform:capitalize"><%= u.role %></span></td>
+            <td>
+              <span class="badge <%= u.is_active ? 'badge-accepted' : 'badge-rejected' %>">
+                <%= u.is_active ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+            <td class="text-muted text-sm"><%= new Date(u.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %></td>
+            <td>
+              <form action="/admin/users/<%= u.id %>/toggle-active" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-ghost btn-sm" style="color:<%= u.is_active?'var(--danger)':'var(--success)' %>">
+                  <%= u.is_active ? 'Deactivate' : 'Activate' %>
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<%- include('../layouts/footer') %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const userData = <%- JSON.stringify(userChart) %>;
+  new Chart(document.getElementById('userChart'), {
+    type: 'bar',
+    data: {
+      labels: userData.map(d => d.month),
+      datasets: [{
+        label: 'New users',
+        data: userData.map(d => d.count),
+        backgroundColor: '#14110D',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: '#E6DFD3' }, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>
