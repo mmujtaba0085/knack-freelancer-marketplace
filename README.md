@@ -15,6 +15,54 @@ A full-stack freelancer marketplace built with Node.js, Express, MySQL, and EJS 
 
 ---
 
+## Screenshots
+
+### Landing & Auth
+| | |
+|---|---|
+| ![Home](public/img/screenshots/01-home.png) | ![Signup](public/img/screenshots/02-signup.png) |
+| **Home — landing page** | **Signup — role selection & validation** |
+| ![Login](public/img/screenshots/03-login.png) | ![Notifications](public/img/screenshots/14-notifications.png) |
+| **Login** | **Notifications centre** |
+
+### Freelancer
+| | |
+|---|---|
+| ![Freelancer Dashboard](public/img/screenshots/04-freelancer-dashboard.png) | ![Browse Jobs](public/img/screenshots/05-browse-jobs.png) |
+| **Freelancer dashboard** | **Browse jobs with filters** |
+| ![Applications](public/img/screenshots/06-applications.png) | ![Freelancer Contracts](public/img/screenshots/07-freelancer-contracts.png) |
+| **My applications** | **Active contracts** |
+| ![Profile](public/img/screenshots/11-profile.png) | ![Edit Profile](public/img/screenshots/12-edit-profile.png) |
+| **Public profile with portfolio** | **Edit profile & skills** |
+| ![Freelancer Offers](public/img/screenshots/13-freelancer-offers.png) | ![Saved Jobs](public/img/screenshots/22-saved-jobs.png) |
+| **Incoming offers** | **Saved / bookmarked jobs** |
+
+### Contracts & Messaging
+| | |
+|---|---|
+| ![Contract Detail](public/img/screenshots/08-contract-detail.png) | ![Chat](public/img/screenshots/10-chat.png) |
+| **Contract detail — milestones & deliverables** | **In-contract chat with file sharing** |
+| ![Messages Inbox](public/img/screenshots/09-messages-inbox.png) | |
+| **Unified messages inbox** | |
+
+### Client
+| | |
+|---|---|
+| ![Client Dashboard](public/img/screenshots/15-client-dashboard.png) | ![Post Job](public/img/screenshots/16-post-job.png) |
+| **Client dashboard** | **Post a job** |
+| ![My Jobs](public/img/screenshots/17-client-jobs.png) | ![Proposals](public/img/screenshots/18-proposals.png) |
+| **My jobs list** | **Proposals per job — accept / decline** |
+
+### Admin
+| | |
+|---|---|
+| ![Admin Dashboard](public/img/screenshots/19-admin-dashboard.png) | ![Admin Users](public/img/screenshots/20-admin-users.png) |
+| **Admin dashboard** | **User management** |
+| ![Admin Disputes](public/img/screenshots/21-admin-disputes.png) | |
+| **Dispute queue** | |
+
+---
+
 ## Features at a Glance
 
 | Area | What's included |
