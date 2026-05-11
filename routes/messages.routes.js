@@ -9,5 +9,6 @@ router.get('/proposals/:id/chat',          requireLogin, ctrl.proposalChat);
 router.get('/contracts/:id/chat',          requireLogin, ctrl.contractChat);
 router.post('/messages/send',              requireLogin, ctrl.chatUpload.single('file'), ctrl.send);
 router.get('/api/contracts/:id/messages',  requireLogin, ctrl.poll);
+router.get('/api/proposals/:id/messages',  requireLogin, ctrl.pollProposal);
 
 module.exports = router;

@@ -55,7 +55,7 @@ if (badge) {
     } catch {}
   };
   pollNotifs();
-  setInterval(pollNotifs, 30000);
+  setInterval(pollNotifs, 8000);
 }
 
 // ─── Flash messages as toasts ─────────────────────────────────────────────────

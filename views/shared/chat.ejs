@@ -126,12 +126,12 @@
     }
   });
 
-  <% if (contract) { %>
-  // Poll for new messages every 4s on contract chats
+  // Poll for new messages every 4s (works for both proposal and contract chats)
+  const pollUrl = '<% if (contract) { %>/api/contracts/<%= contract.id %>/messages<% } else { %>/api/proposals/<%= proposal.id %>/messages<% } %>';
   let lastId = <%= messages.length ? messages[messages.length-1].id : 0 %>;
   setInterval(async () => {
     try {
-      const r = await fetch(`/api/contracts/<%= contract.id %>/messages?after=${lastId}`);
+      const r = await fetch(`${pollUrl}?after=${lastId}`);
       const msgs = await r.json();
       if (!msgs.length) return;
       msgs.forEach(m => {
@@ -153,10 +153,11 @@
         }
         inner += `<div class="chat-time">${new Date(m.created_at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
         div.innerHTML = inner;
+        const empty = body.querySelector('div[style*="text-align:center"]');
+        if (empty) empty.remove();
         body.appendChild(div);
       });
       body.scrollTop = body.scrollHeight;
     } catch(e) {}
   }, 4000);
-  <% } %>
 </script>

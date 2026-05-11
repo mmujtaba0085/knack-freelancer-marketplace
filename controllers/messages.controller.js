@@ -235,3 +235,18 @@ exports.poll = async (req, res) => {
   `, [cid, after]);
   res.json(msgs);
 };
+
+// ─── GET /api/proposals/:id/messages (polling) ────────────────────────────────
+exports.pollProposal = async (req, res) => {
+  const uid   = req.session.userId;
+  const pid   = parseInt(req.params.id);
+  const after = parseInt(req.query.after) || 0;
+  const ok = await assertProposalAccess(pid, uid);
+  if (!ok) return res.json([]);
+  const [msgs] = await db.query(`
+    SELECT m.*, u.name AS sender_name, u.avatar_url AS sender_avatar
+    FROM messages m JOIN users u ON m.sender_id=u.id
+    WHERE m.proposal_id=? AND m.id>? ORDER BY m.created_at ASC
+  `, [pid, after]);
+  res.json(msgs);
+};
