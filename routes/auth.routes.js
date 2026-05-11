@@ -10,6 +10,9 @@ router.post('/login',           loginLimiter, loginRules, validate, ctrl.postLog
 router.get('/signup',           ctrl.getSignup);
 router.post('/signup',          signupLimiter, signupRules, validate, ctrl.postSignup);
 router.get('/logout',           ctrl.logout);
+router.get('/verify-email',     ctrl.getVerify);
+router.post('/verify-email',    ctrl.postVerify);
+router.post('/resend-code',     ctrl.postResendCode);
 router.get('/forgot-password',  ctrl.getForgot);
 router.post('/forgot-password', forgotRules, validate, ctrl.postForgot);
 router.get('/reset-password',   ctrl.getReset);

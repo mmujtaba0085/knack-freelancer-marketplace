@@ -100,6 +100,10 @@ async function migrate() {
   )`);
   console.log('  ✓ portfolio_items');
 
+  await addCol(`ALTER TABLE users ADD COLUMN is_verified TINYINT(1) NOT NULL DEFAULT 1`, 'users.is_verified');
+  await addCol(`ALTER TABLE users ADD COLUMN verify_code VARCHAR(6) DEFAULT NULL`, 'users.verify_code');
+  await addCol(`ALTER TABLE users ADD COLUMN verify_expires_at TIMESTAMP NULL DEFAULT NULL`, 'users.verify_expires_at');
+
   await addCol(`ALTER TABLE disputes ADD COLUMN category ENUM('non_delivery','quality','payment','scope','other') DEFAULT 'other' AFTER reason`, 'disputes.category');
   await addCol(`ALTER TABLE disputes ADD COLUMN allow_admin_chat TINYINT DEFAULT 0 AFTER admin_note`, 'disputes.allow_admin_chat');
   await addCol(`ALTER TABLE contracts ADD COLUMN deadline DATE NULL AFTER agreed_budget`, 'contracts.deadline');

@@ -11,6 +11,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+exports.sendVerificationEmail = async (to, name, code) => {
+  await transporter.sendMail({
+    from: `"Knack" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Your Knack verification code',
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#FAF7F2;padding:40px;border-radius:12px">
+        <div style="font-family:Georgia,serif;font-size:28px;color:#FF6B2C;margin-bottom:24px">Knack.</div>
+        <h2 style="color:#14110D;margin:0 0 16px">Hi ${name},</h2>
+        <p style="color:#3A352D;line-height:1.6">Enter this code to verify your email address and activate your account:</p>
+        <div style="margin:28px 0;text-align:center;font-family:Georgia,serif;font-size:48px;font-weight:700;letter-spacing:12px;color:#14110D;background:#fff;border-radius:8px;padding:20px">${code}</div>
+        <p style="color:#6B6358;font-size:13px">This code expires in 15 minutes. If you didn't create a Knack account, you can safely ignore this email.</p>
+      </div>
+    `,
+  });
+};
+
 exports.sendResetEmail = async (to, name, link) => {
   await transporter.sendMail({
     from: `"Knack" <${process.env.EMAIL_USER}>`,

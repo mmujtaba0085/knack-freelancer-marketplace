@@ -26,10 +26,16 @@ exports.postLogin = async (req, res) => {
     if (!user.is_active) {
       return res.render('auth/login', { errors: [{ msg: 'Your account has been deactivated. Contact support.' }], body: req.body });
     }
-    // Criterion 6: use bcrypt.compare, NEVER string equality
     const match = await bcrypt.compare(req.body.password, user.password_hash);
     if (!match) {
       return res.render('auth/login', { errors: [{ msg: 'Invalid email or password' }], body: req.body });
+    }
+    if (!user.is_verified) {
+      req.session.pendingVerifyId    = user.id;
+      req.session.pendingVerifyEmail = user.email;
+      req.session.pendingVerifyName  = user.name;
+      req.session.pendingVerifyRole  = user.role;
+      return req.session.save(() => res.redirect('/verify-email'));
     }
     // Criterion 21: regenerate session on login (prevents session fixation)
     const returnTo = req.session.returnTo;
@@ -69,26 +75,89 @@ exports.postSignup = async (req, res) => {
         body: req.body
       });
     }
-    // Criterion 4+5: hash password immediately; raw password never stored
     const hash = await bcrypt.hash(req.body.password, SALT_ROUNDS);
     const [result] = await db.query(
-      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+      'INSERT INTO users (name, email, password_hash, role, is_verified) VALUES (?, ?, ?, ?, 0)',
       [req.body.name, req.body.email, hash, req.body.role]
     );
+    const userId = result.insertId;
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await db.query('UPDATE users SET verify_code=?, verify_expires_at=? WHERE id=?', [code, expiresAt, userId]);
+    try { await mailer.sendVerificationEmail(req.body.email, req.body.name, code); } catch (_) {}
+    req.session.pendingVerifyId    = userId;
+    req.session.pendingVerifyEmail = req.body.email;
+    req.session.pendingVerifyName  = req.body.name;
+    req.session.pendingVerifyRole  = req.body.role;
+    req.session.save(() => res.redirect('/verify-email'));
+  } catch (e) {
+    console.error(e);
+    res.render('auth/signup', { errors: [{ msg: 'Registration failed. Please try again.' }], body: req.body });
+  }
+};
+
+// ─── GET /verify-email ────────────────────────────────────────────────────────
+exports.getVerify = (req, res) => {
+  if (!req.session.pendingVerifyId) return res.redirect('/signup');
+  const email = req.session.pendingVerifyEmail || '';
+  const masked = email.replace(/^(..)[^@]+/, '$1***');
+  res.render('auth/verify-email', { error: null, masked });
+};
+
+// ─── POST /verify-email ───────────────────────────────────────────────────────
+exports.postVerify = async (req, res) => {
+  const userId = req.session.pendingVerifyId;
+  if (!userId) return res.redirect('/signup');
+  const masked = (req.session.pendingVerifyEmail || '').replace(/^(..)[^@]+/, '$1***');
+  const entered = (req.body.code || '').trim();
+  try {
+    const [rows] = await db.query(
+      'SELECT verify_code, verify_expires_at, role FROM users WHERE id=? AND is_verified=0',
+      [userId]
+    );
+    if (!rows.length) {
+      return res.render('auth/verify-email', { error: 'Account not found or already verified.', masked });
+    }
+    const { verify_code, verify_expires_at, role } = rows[0];
+    if (new Date() > new Date(verify_expires_at)) {
+      return res.render('auth/verify-email', { error: 'Code expired. Please request a new one.', masked });
+    }
+    if (entered !== verify_code) {
+      return res.render('auth/verify-email', { error: 'Incorrect code. Please try again.', masked });
+    }
+    await db.query('UPDATE users SET is_verified=1, verify_code=NULL, verify_expires_at=NULL WHERE id=?', [userId]);
+    const name = req.session.pendingVerifyName;
     req.session.regenerate((err) => {
       if (err) return res.redirect('/login');
-      req.session.userId   = result.insertId;
-      req.session.userName = req.body.name;
-      req.session.role     = req.body.role;
+      req.session.userId   = userId;
+      req.session.userName = name;
+      req.session.role     = role;
       req.session.save(() => {
-        req.flash('success', `Welcome to Knack, ${req.body.name}!`);
+        req.flash('success', `Welcome to Knack, ${name}!`);
         const redirectMap = { client: '/client/dashboard', freelancer: '/freelancer/dashboard' };
-        res.redirect(redirectMap[req.body.role] || '/dashboard');
+        res.redirect(redirectMap[role] || '/dashboard');
       });
     });
   } catch (e) {
     console.error(e);
-    res.render('auth/signup', { errors: [{ msg: 'Registration failed. Please try again.' }], body: req.body });
+    res.render('auth/verify-email', { error: 'Something went wrong. Please try again.', masked });
+  }
+};
+
+// ─── POST /resend-code ────────────────────────────────────────────────────────
+exports.postResendCode = async (req, res) => {
+  const userId = req.session.pendingVerifyId;
+  if (!userId) return res.redirect('/signup');
+  const masked = (req.session.pendingVerifyEmail || '').replace(/^(..)[^@]+/, '$1***');
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await db.query('UPDATE users SET verify_code=?, verify_expires_at=? WHERE id=?', [code, expiresAt, userId]);
+    try { await mailer.sendVerificationEmail(req.session.pendingVerifyEmail, req.session.pendingVerifyName, code); } catch (_) {}
+    res.render('auth/verify-email', { error: null, masked, resent: true });
+  } catch (e) {
+    console.error(e);
+    res.render('auth/verify-email', { error: 'Could not resend code. Try again.', masked });
   }
 };
 
