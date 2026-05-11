@@ -9,6 +9,10 @@ const { attachUser } = require('./middleware/auth');
 
 const app = express();
 
+// Trust one proxy hop (Caddy / Nginx) so req.ip reflects the real client IP.
+// Without this, all users share the same rate-limit bucket behind a reverse proxy.
+app.set('trust proxy', 1);
+
 // ─── View engine ──────────────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -27,7 +31,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,           // prevents JS access to cookie
-    secure: false,            // set true in production (HTTPS)
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 1000 * 60 * 30,  // 30-minute inactivity expiry
   },
 }));
