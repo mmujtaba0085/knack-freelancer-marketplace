@@ -4,8 +4,11 @@ const rateLimit = require('express-rate-limit');
 // Behind Caddy/Nginx, read the real client IP from X-Forwarded-For directly.
 // express-rate-limit v7 needs an explicit keyGenerator when behind a proxy,
 // otherwise all requests share the same bucket (the proxy IP).
-const realIp = (req) =>
-  (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress;
+const realIp = (req) => {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress;
+  console.log(`[rate-limit] key=${ip} xff=${req.headers['x-forwarded-for']} socket=${req.socket.remoteAddress}`);
+  return ip;
+};
 
 exports.loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
